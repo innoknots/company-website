@@ -8,26 +8,32 @@ type Panel = {
   line: string;
   image: string;
   alt: string;
+  /* Which part of the photo to hold on to as the panel narrows. */
+  focus: string;
   veil: string;
 };
 
 const panels: Panel[] = [
   {
     href: "/sailing",
-    eyebrow: "On the water",
+    eyebrow: "For Pleasure",
     title: "Sailing",
     line: "Guided sailboat tours through the Helsinki archipelago.",
     image: "/sailing-hero-web.jpg",
     alt: "A striped spinnaker filled with wind on the Helsinki archipelago",
+    /* Sits just above the horizon, so the sail, the sea and the deck all
+       stay in frame on narrow screens. */
+    focus: "center 68%",
     veil: "linear-gradient(180deg, rgba(21,51,82,0.34) 0%, rgba(3,164,195,0.30) 45%, rgba(21,51,82,0.78) 100%)",
   },
   {
     href: "/consulting",
-    eyebrow: "On land",
+    eyebrow: "For Business",
     title: "Consulting",
     line: "Automation hardware design and sustainable server recycling.",
     image: "/consulting-hero.jpeg",
     alt: "An engineer working with a networked hardware interface",
+    focus: "center 40%",
     veil: "linear-gradient(180deg, rgba(21,51,82,0.52) 0%, rgba(21,51,82,0.58) 45%, rgba(9,26,43,0.86) 100%)",
   },
 ];
@@ -39,7 +45,9 @@ export default function Home() {
         <Link
           key={panel.href}
           href={panel.href}
-          className="split-panel group relative flex min-h-[50svh] flex-1 items-end overflow-hidden md:min-h-svh"
+          /* Stacked panels take half the viewport, but never squeeze below a
+             readable height — a short window scrolls instead of cramping. */
+          className="split-panel group relative flex min-h-[max(50svh,24rem)] flex-1 items-end overflow-hidden md:min-h-svh"
         >
           <Image
             src={panel.image}
@@ -47,6 +55,7 @@ export default function Home() {
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
+            style={{ objectPosition: panel.focus }}
             className="panel-image object-cover"
           />
           <div
