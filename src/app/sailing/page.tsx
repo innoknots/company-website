@@ -28,7 +28,7 @@ const onTheWater = [
   },
   {
     title: "Cruising as crew",
-    line: "Join a longer passage as crew and cover distances a day sail never reaches.",
+    line: "Sail with me as working crew on longer passages — watches, night hours, and the miles that come with them.",
   },
 ];
 
@@ -212,8 +212,8 @@ export default function SailingPage() {
             <p className="mt-5 max-w-[46ch] text-lg text-white/80">
               A cruising yacht sized for the Baltic — big enough to stay out
               overnight, small enough that one person can learn to handle her.
-              She is kept, serviced and repaired by the same person who teaches
-              on her.
+              She lies in Helsinki, and is kept, serviced and repaired by the
+              same person who teaches on her.
             </p>
           </div>
         </div>
