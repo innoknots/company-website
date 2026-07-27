@@ -14,7 +14,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InnoKnots — Sailing & Consulting in Helsinki",
+  title: "InnoKnots | Sailing & Consulting in Helsinki",
   description:
     "InnoKnots Oy runs two lines of work from Helsinki: guided sailboat tours in the archipelago, and consulting in automation hardware design and server recycling.",
 };

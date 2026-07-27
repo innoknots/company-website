@@ -4,7 +4,7 @@ import Link from "next/link";
 import RevealOnScroll from "../reveal-on-scroll";
 
 export const metadata: Metadata = {
-  title: "Sailing — InnoKnots",
+  title: "Sailing | InnoKnots",
   description:
     "Hands-on sailing training and sea time in the Gulf of Finland aboard a Bavaria Cruiser 30, with an ICC-certified skipper who maintains his own boat.",
 };
@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 const onTheWater = [
   {
     title: "Sailing basics",
-    line: "Your first hours on the helm — points of sail, trimming, and coming alongside without drama.",
+    line: "Your first hours on the helm: points of sail, trimming, and coming alongside without drama.",
   },
   {
     title: "Mile building",
-    line: "Log the sea miles your certification asks for on real passages, not in a classroom.",
+    line: "Sail as working crew on longer passages, standing watches and logging the sea miles your certification asks for.",
   },
   {
     title: "Motorboating basics",
@@ -25,10 +25,6 @@ const onTheWater = [
   {
     title: "Single-handed sailing",
     line: "Set the boat up so one pair of hands is enough, from reefing to picking up a buoy.",
-  },
-  {
-    title: "Cruising as crew",
-    line: "Sail with me as working crew on longer passages — watches, night hours, and the miles that come with them.",
   },
 ];
 
@@ -125,7 +121,7 @@ export default function SailingPage() {
           </h1>
           <p className="mt-5 max-w-[52ch] text-lg text-white/85 md:text-xl">
             Hands-on training and sea time in the Gulf of Finland, aboard a
-            Bavaria Cruiser 30 — with a skipper who also services his own engine.
+            Bavaria Cruiser 30, with a skipper who also services his own engine.
           </p>
           <a
             href="#contact"
@@ -193,12 +189,15 @@ export default function SailingPage() {
       {/* The boat -------------------------------------------------------- */}
       <section className="reveal bg-navy px-6 py-20 text-white md:px-12 md:py-28">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-sm">
+          {/* The photo is a tall 1:2 frame; a 2:3 crop held high keeps the
+              masthead and the hull in view at once. */}
+          <div className="relative mx-auto aspect-[2/3] w-full max-w-md overflow-hidden rounded-sm lg:max-w-none">
             <Image
               src="/boat-exterior.jpg"
               alt="The Bavaria Cruiser 30 under spinnaker with crew aboard"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
+              style={{ objectPosition: "center 33%" }}
               className="object-cover"
             />
           </div>
@@ -210,7 +209,7 @@ export default function SailingPage() {
               Bavaria Cruiser 30
             </p>
             <p className="mt-5 max-w-[46ch] text-lg text-white/80">
-              A cruising yacht sized for the Baltic — big enough to stay out
+              A cruising yacht sized for the Baltic: big enough to stay out
               overnight, small enough that one person can learn to handle her.
               She lies in Helsinki, and is kept, serviced and repaired by the
               same person who teaches on her.
@@ -239,11 +238,11 @@ export default function SailingPage() {
               Yang Yu
             </p>
             <p className="mt-5 max-w-[52ch] text-lg text-navy/75">
-              I sail my own boat through the Gulf of Finland — Loviisa, Helsinki,
-              Hanko, Tallinn — and have chartered through Spain, Italy, Croatia
-              and Greece. I hold an International Certificate of Competence, and
-              I do my own engine and boat maintenance, which is why the help I
-              offer does not stop at the dock.
+              I sail my own boat through the Gulf of Finland, from Loviisa to
+              Helsinki, Hanko and Tallinn, and have chartered through Spain,
+              Italy, Croatia and Greece. I hold an International Certificate of
+              Competence, and I do my own engine and boat maintenance, which is
+              why the help I offer does not stop at the dock.
             </p>
             <dl className="mt-8 flex flex-col gap-3 border-t border-navy/10 pt-6 font-mono text-sm">
               <div className="flex gap-6">

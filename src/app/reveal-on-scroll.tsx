@@ -6,7 +6,7 @@ import { useEffect } from "react";
  * Fades sections marked `.reveal` into place as they scroll into view.
  *
  * Sections render visible. Only once this effect runs does the root get
- * `data-reveal="armed"`, which is what hides them — so a browser that never
+ * `data-reveal="armed"`, which is what hides them, so a browser that never
  * executes the script, or one that prefers reduced motion, shows the page
  * in full rather than blank.
  */

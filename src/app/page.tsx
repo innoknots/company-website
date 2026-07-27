@@ -46,7 +46,7 @@ export default function Home() {
           key={panel.href}
           href={panel.href}
           /* Stacked panels take half the viewport, but never squeeze below a
-             readable height — a short window scrolls instead of cramping. */
+             readable height. A short window scrolls instead of cramping. */
           className="split-panel group relative flex min-h-[max(50svh,24rem)] flex-1 items-end overflow-hidden md:min-h-svh"
         >
           <Image

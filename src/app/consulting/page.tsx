@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Consulting — InnoKnots",
+  title: "Consulting | InnoKnots",
   description:
     "Automation hardware design and sustainable server recycling from InnoKnots Oy, Helsinki.",
 };
