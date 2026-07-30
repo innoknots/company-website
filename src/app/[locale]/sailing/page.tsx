@@ -1,72 +1,32 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import RevealOnScroll from "../reveal-on-scroll";
+import RevealOnScroll from "../../reveal-on-scroll";
+import { localeHref } from "@/i18n/href";
+import { sailingDict } from "@/i18n/dictionaries/sailing";
+import { asLocale } from "@/i18n/locales";
 
-export const metadata: Metadata = {
-  title: "Sailing | InnoKnots",
-  description:
-    "Hands-on sailing training and sea time in the Gulf of Finland aboard a Bavaria Cruiser 30, with an ICC-certified skipper who maintains his own boat.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = asLocale((await params).locale);
+  return sailingDict[locale].meta;
+}
 
-const onTheWater = [
-  {
-    title: "Sailing basics",
-    line: "Your first hours on the helm: points of sail, trimming, and coming alongside without drama.",
-  },
-  {
-    title: "Mile building",
-    line: "Sail as working crew on longer passages, standing watches and logging the sea miles your certification asks for.",
-  },
-  {
-    title: "Motorboating basics",
-    line: "Handling under power: manoeuvring in harbour, berthing, and reading what the engine tells you.",
-  },
-  {
-    title: "Single-handed sailing",
-    line: "Set the boat up so one pair of hands is enough, from reefing to picking up a buoy.",
-  },
-];
+export default async function SailingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const locale = asLocale((await params).locale);
+  const d = sailingDict[locale];
+  const home = localeHref(locale, "/");
+  const otherLocale = locale === "en" ? "zh" : "en";
+  const langSwitchHref = `?setlocale=${otherLocale}`;
+  const langSwitchLabel = locale === "en" ? "中文" : "English";
 
-const ashore = [
-  {
-    title: "Motor service",
-    line: "Work through servicing and repair on your own engine, with the tools you actually own.",
-  },
-  {
-    title: "Boat electronics",
-    line: "Plan and fit instruments, wiring and power so the install survives its first season.",
-  },
-  {
-    title: "Buying a boat",
-    line: "Go through the search, the survey and the paperwork before any money moves.",
-  },
-];
-
-const waters = [
-  {
-    image: "/waters-lighthouse.jpg",
-    alt: "The Finnish ensign flying astern, a lighthouse on the horizon",
-    caption: "Gulf of Finland",
-  },
-  {
-    image: "/waters-bridge.jpg",
-    alt: "A cable-stayed bridge seen from the water near Helsinki",
-    caption: "Helsinki approaches",
-  },
-  {
-    image: "/waters-tallinn.jpg",
-    alt: "A spinnaker in the foreground with a Tallinn ferry passing behind",
-    caption: "Crossings to Tallinn",
-  },
-  {
-    image: "/waters-autumn.jpg",
-    alt: "The boat moored beside an island in autumn colours",
-    caption: "Archipelago anchorages",
-  },
-];
-
-export default function SailingPage() {
   return (
     <main className="page-enter bg-white text-navy">
       <RevealOnScroll />
@@ -75,7 +35,7 @@ export default function SailingPage() {
       <section className="relative flex min-h-[max(88svh,34rem)] flex-col">
         <Image
           src="/sailing-hero-web.jpg"
-          alt="A striped spinnaker filled with wind on the Gulf of Finland"
+          alt={d.hero.imageAlt}
           fill
           priority
           sizes="100vw"
@@ -92,42 +52,56 @@ export default function SailingPage() {
         />
 
         <header className="relative flex items-center justify-between px-6 py-6 md:px-12">
-          <Link href="/" aria-label="InnoKnots home">
-            <span className="rounded-sm bg-white/95 px-4 py-3 shadow-lg inline-block">
+          <Link href={home} aria-label="InnoKnots home">
+            <span className="rounded-sm bg-white/95 px-3 py-2 shadow-lg inline-block">
               <Image
                 src="/logo-horizontal.png"
                 alt="InnoKnots"
-                width={799}
-                height={312}
+                width={763}
+                height={275}
                 priority
-                className="h-6 w-auto md:h-7"
+                className="h-7 w-auto md:h-8"
               />
             </span>
           </Link>
-          <Link
-            href="/"
-            className="font-mono text-xs uppercase tracking-[0.14em] text-white/80 transition-colors hover:text-white"
-          >
-            Back
-          </Link>
+          <span className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.14em] text-white/80">
+            <Link
+              href={langSwitchHref}
+              className="transition-colors hover:text-white"
+            >
+              {langSwitchLabel}
+            </Link>
+            <Link href={home} className="transition-colors hover:text-white">
+              {d.nav.back}
+            </Link>
+          </span>
         </header>
 
         <div className="relative mt-auto px-6 pb-16 md:px-12 md:pb-24">
           <span className="font-mono text-xs uppercase tracking-[0.18em] text-white/75">
-            For Pleasure
+            {d.hero.eyebrow}
           </span>
-          <h1 className="mt-4 max-w-[16ch] text-5xl font-semibold leading-[1.05] tracking-tight text-white md:text-7xl">
-            Learn to sail. Build your miles.
+          {/* `ch` sizes off a narrow glyph, so it under-measures CJK text
+              (near 1em per character) and wraps far too early. English
+              keeps the deliberate two-line break; Chinese stays on one
+              line and scales down instead. */}
+          <h1
+            className={
+              locale === "zh"
+                ? "mt-4 whitespace-nowrap text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-6xl lg:text-7xl"
+                : "mt-4 max-w-[16ch] text-5xl font-semibold leading-[1.05] tracking-tight text-white md:text-7xl"
+            }
+          >
+            {d.hero.heading}
           </h1>
           <p className="mt-5 max-w-[52ch] text-lg text-white/85 md:text-xl">
-            Hands-on training and sea time in the Gulf of Finland, aboard a
-            Bavaria Cruiser 30, with a skipper who also services his own engine.
+            {d.hero.body}
           </p>
           <a
             href="#contact"
             className="mt-8 inline-flex items-center gap-2 rounded-sm bg-white px-6 py-3 font-mono text-xs uppercase tracking-[0.14em] text-navy transition-colors hover:bg-cyan hover:text-white"
           >
-            Get in touch
+            {d.hero.cta}
           </a>
         </div>
       </section>
@@ -136,16 +110,16 @@ export default function SailingPage() {
       <section className="reveal px-6 py-20 md:px-12 md:py-28">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-            What we can do together
+            {d.services.heading}
           </h2>
 
           <div className="mt-14 grid gap-14 lg:grid-cols-[1fr_auto_1fr] lg:gap-16">
             <div>
               <h3 className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-                On the water
+                {d.services.onWaterLabel}
               </h3>
               <ul className="mt-6 flex flex-col gap-6">
-                {onTheWater.map((item) => (
+                {d.services.onWater.map((item) => (
                   <li key={item.title}>
                     <h4 className="text-xl font-semibold">{item.title}</h4>
                     <p className="mt-1 max-w-[46ch] text-navy/70">{item.line}</p>
@@ -161,10 +135,10 @@ export default function SailingPage() {
 
             <div>
               <h3 className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-                Ashore
+                {d.services.ashoreLabel}
               </h3>
               <ul className="mt-6 flex flex-col gap-6">
-                {ashore.map((item) => (
+                {d.services.ashore.map((item) => (
                   <li key={item.title}>
                     <h4 className="text-xl font-semibold">{item.title}</h4>
                     <p className="mt-1 max-w-[46ch] text-navy/70">{item.line}</p>
@@ -174,7 +148,7 @@ export default function SailingPage() {
               <div className="relative mt-10 aspect-[4/3] overflow-hidden rounded-sm">
                 <Image
                   src="/helm.jpg"
-                  alt="Yang Yu at the wheel under way"
+                  alt={d.services.helmAlt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover"
@@ -189,30 +163,28 @@ export default function SailingPage() {
       {/* The boat -------------------------------------------------------- */}
       <section className="reveal bg-navy px-6 py-20 text-white md:px-12 md:py-28">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          {/* The photo is a tall 1:2 frame; a 2:3 crop held high keeps the
-              masthead and the hull in view at once. */}
+          {/* Bottom-aligned: the frame is a touch shorter than the photo,
+              and there is sky to spare at the top but none of the hull to
+              lose at the bottom. */}
           <div className="relative mx-auto aspect-[2/3] w-full max-w-md overflow-hidden rounded-sm lg:max-w-none">
             <Image
               src="/boat-exterior.jpg"
-              alt="The Bavaria Cruiser 30 under spinnaker with crew aboard"
+              alt={d.boat.imageAlt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              style={{ objectPosition: "center 33%" }}
+              style={{ objectPosition: "center 100%" }}
               className="object-cover"
             />
           </div>
           <div>
             <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-              The boat
+              {d.boat.label}
             </h2>
             <p className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-              Bavaria Cruiser 30
+              {d.boat.name}
             </p>
             <p className="mt-5 max-w-[46ch] text-lg text-white/80">
-              A cruising yacht sized for the Baltic: big enough to stay out
-              overnight, small enough that one person can learn to handle her.
-              She lies in Helsinki, and is kept, serviced and repaired by the
-              same person who teaches on her.
+              {d.boat.body}
             </p>
           </div>
         </div>
@@ -224,7 +196,7 @@ export default function SailingPage() {
           <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
             <Image
               src="/skipper.jpg"
-              alt="Yang Yu aboard his boat in Helsinki"
+              alt={d.skipper.imageAlt}
               fill
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover"
@@ -232,36 +204,32 @@ export default function SailingPage() {
           </div>
           <div>
             <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-              The skipper
+              {d.skipper.label}
             </h2>
             <p className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-              Yang Yu
+              {d.skipper.name}
             </p>
             <p className="mt-5 max-w-[52ch] text-lg text-navy/75">
-              I sail my own boat through the Gulf of Finland, from Loviisa to
-              Helsinki, Hanko and Tallinn, and have chartered through Spain,
-              Italy, Croatia and Greece. I hold an International Certificate of
-              Competence, and I do my own engine and boat maintenance, which is
-              why the help I offer does not stop at the dock.
+              {d.skipper.body}
             </p>
             <dl className="mt-8 flex flex-col gap-3 border-t border-navy/10 pt-6 font-mono text-sm">
               <div className="flex gap-6">
                 <dt className="w-32 shrink-0 uppercase tracking-[0.12em] text-navy/50">
-                  Certificate
+                  {d.skipper.certificateLabel}
                 </dt>
-                <dd>International Certificate of Competence (ICC)</dd>
+                <dd>{d.skipper.certificateValue}</dd>
               </div>
               <div className="flex gap-6">
                 <dt className="w-32 shrink-0 uppercase tracking-[0.12em] text-navy/50">
-                  Home waters
+                  {d.skipper.homeWatersLabel}
                 </dt>
-                <dd>Gulf of Finland</dd>
+                <dd>{d.skipper.homeWatersValue}</dd>
               </div>
               <div className="flex gap-6">
                 <dt className="w-32 shrink-0 uppercase tracking-[0.12em] text-navy/50">
-                  Also sailed
+                  {d.skipper.alsoSailedLabel}
                 </dt>
-                <dd>Spain · Italy · Croatia · Greece</dd>
+                <dd>{d.skipper.alsoSailedValue}</dd>
               </div>
             </dl>
           </div>
@@ -272,10 +240,10 @@ export default function SailingPage() {
       <section className="reveal px-6 pb-20 md:px-12 md:pb-28">
         <div className="mx-auto max-w-6xl">
           <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-            Where we sail
+            {d.waters.heading}
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {waters.map((w) => (
+            {d.waters.items.map((w) => (
               <figure key={w.image} className="flex flex-col gap-3">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm">
                   <Image
@@ -301,12 +269,11 @@ export default function SailingPage() {
         className="reveal border-t border-navy/10 px-6 py-20 md:px-12 md:py-28"
       >
         <div className="mx-auto max-w-6xl">
-          <h2 className="max-w-[20ch] text-3xl font-semibold tracking-tight md:text-4xl">
-            Tell me what you want to learn.
+          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+            {d.contact.heading}
           </h2>
           <p className="mt-4 max-w-[52ch] text-lg text-navy/70">
-            Write with what you have done so far and what you are aiming for, and
-            we will work out what makes sense.
+            {d.contact.body}
           </p>
           <div className="mt-10 flex flex-col gap-3 font-mono text-sm">
             <a
@@ -327,8 +294,8 @@ export default function SailingPage() {
 
       <footer className="border-t border-navy/10 px-6 py-6 font-mono text-xs text-navy/60 md:px-12">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2">
-          <span>InnoKnots Oy · Helsinki, Finland</span>
-          <Link href="/" className="transition-colors hover:text-navy">
+          <span>{d.footer.line}</span>
+          <Link href={home} className="transition-colors hover:text-navy">
             innoknots.com
           </Link>
         </div>
