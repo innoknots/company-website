@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>转弯半径 · 6×4 参数与入弯偏移</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="6×4牵引车+半挂：有效轴距/销轴距可调，入弯偏移(off-tracking)动画；含欧盟与北欧+比利时法规。">
+<style>:root{color-scheme:light}img{max-width:100%}</style>
+<style>
+  :root{--ink:#0e1726;--soft:#3a4658;--muted:#6b7688;--line:#d7deea;--paper:#eef2f8;--card:#fff;
+    --be:#16a34a;--wr:#ea580c;--steel:#334155;--shadow:0 1px 2px rgba(14,23,38,.05),0 6px 20px rgba(14,23,38,.07);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;font-size:13px;}
+  .wrap{max-width:100%;margin:0;padding:36px 32px 64px;}
+  h1{font-size:22px;margin:0 0 2px;} .sub{color:var(--muted);font-size:13px;margin:2px 0 20px;}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start;}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px;}
+  .card h2{font-size:17px;margin:0 0 10px;}
+  canvas{display:block;width:100%;max-width:640px;height:auto;border-radius:10px;background:#f4f7fb;}
+  figure{margin:0;overflow-x:auto;}
+  .ctrl{display:grid;grid-template-columns:auto 1fr auto;gap:9px 12px;align-items:center;margin-top:6px;font-size:13px;}
+  .ctrl label{font-weight:700;} .ctrl output{font-variant-numeric:tabular-nums;font-weight:800;color:var(--wr);min-width:48px;text-align:right;}
+  input[type=range]{width:100%;accent-color:var(--wr);}
+  .eq{background:#0e1726;color:#eaf0f8;border-radius:10px;padding:11px 14px;text-align:center;font-size:13px;margin-top:14px;} .eq b{color:#f2a338;}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .ro{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px;} .ro .k{font-size:13px;color:var(--muted);font-weight:700;} .ro .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .ok{color:var(--be);} .bad{color:#c0392b;}
+  .row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;}
+  button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;} button:hover{background:#f1f5fb;}
+  .formula{background:#0e1726;color:#eaf0f8;border-radius:12px;padding:14px 16px;font-size:15px;text-align:center;margin:4px 0 12px;} .formula small{display:block;color:#9fb0c6;font-size:13px;margin-top:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;} th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);} th:first-child,td:first-child{text-align:left;} thead th{font-size:13px;color:var(--muted);border-bottom:2px solid var(--line);}
+  td.be{color:var(--be);font-weight:700;} td.wr{color:var(--wr);font-weight:700;}
+  .note{font-size:13px;color:var(--muted);margin-top:10px;}
+  .legend{display:flex;flex-wrap:wrap;gap:13px;font-size:13px;color:var(--soft);margin-top:10px;} .legend i{display:inline-block;width:20px;height:0;border-top:3px solid;vertical-align:3px;margin-right:6px;}
+  .calc{font-size:13px;font-variant-numeric:tabular-nums;}
+  .calc details{margin:3px 0;}
+  .calc summary{cursor:pointer;list-style:none;}
+  .calc summary::-webkit-details-marker{display:none;}
+  .calc summary::before{content:"▸ ";color:var(--muted);}
+  .calc details[open]>summary::before{content:"▾ ";}
+  .calc details details{margin-left:14px;border-left:2px solid var(--line);padding-left:12px;}
+  .calc .body{margin:2px 0 4px 16px;color:var(--soft);}
+  .calc b{color:var(--ink);}
+  .calc .prim{background:#fbefdc;border:1px solid #e6cfa0;border-radius:5px;padding:1px 6px;color:#8a4e07;font-weight:700;}
+  .calc code{background:#f1f5fb;padding:1px 5px;border-radius:4px;font-size:13px;}
+  .tag{display:inline-block;font-size:13px;font-weight:800;padding:1px 7px;border-radius:20px;vertical-align:middle;margin-left:8px;}
+  .tag.law{background:#e3edfb;color:#1d4ed8;border:1px solid #b9d0f5;}
+  .tag.eng{background:#eef1f5;color:#475569;border:1px solid #d7deea;}
+  a.src{color:#1d4ed8;text-decoration:none;border-bottom:1px dotted #93b4e8;white-space:nowrap;}
+  a.src:hover{color:#0e1726;border-bottom-color:#0e1726;}
+  a.src::after{content:" \2197";font-size:.85em;color:#93b4e8;}
+  .v{cursor:pointer;border-bottom:1.5px dotted currentColor;}
+  .v:hover{opacity:.65;}
+  @keyframes defblink{0%,100%{opacity:1}50%{opacity:.12}}
+  .defblink{animation:defblink .45s 3;}
+  tr.defblink td{background:#fdf3df;}
+  details.sec>summary{cursor:pointer;list-style:none;}
+  details.sec>summary::-webkit-details-marker{display:none;}
+  details.sec>summary::before{content:"▸ ";color:var(--muted);font-size:13px;}
+  details.sec[open]>summary::before{content:"▾ ";}
+  details.sec>summary h2{display:inline;margin:0;}
+</style>
+<style>
+#langbar{position:fixed;top:10px;left:12px;z-index:99;display:flex;align-items:stretch;
+  background:rgba(255,255,255,.92);border:1px solid #d7deea;border-radius:10px;overflow:hidden;
+  box-shadow:0 2px 10px rgba(14,23,38,.12);font-size:13px;user-select:none;}
+#langbar .globe{display:flex;align-items:center;padding:0 4px 0 9px;color:#6b7688;}
+.lang-btn{font:inherit;font-size:13px;font-weight:700;padding:6px 13px;border:none;background:transparent;
+  cursor:pointer;color:#3a4658;border-right:1px solid #e3e9f2;}
+.lang-btn:last-child{border-right:none;}
+.lang-btn:hover{background:rgba(37,99,235,.06);}
+.lang-btn.active{background:rgba(37,99,235,.13);color:#1d4ed8;}
+</style>
+<style>
+th{position:relative}
+th .col-resizer{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:5;touch-action:none}
+th .col-resizer::after{content:"";position:absolute;top:15%;left:50%;width:2px;height:70%;transform:translateX(-50%);background:var(--line,#ccc);border-radius:1px}
+th .col-resizer:hover::after,th .col-resizer.active::after{background:var(--accent,#5e8cbe);width:3px}
+th .col-resizer:hover,th .col-resizer.active{background:rgba(94,140,190,.12)}
+table.resizing{cursor:col-resize;user-select:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 data-i18n="h1">转弯半径 · 6×4 参数与入弯偏移</h1>
+  <div class="sub" data-i18n="sub1">两个几何参数：<b class="v" data-def="le">有效轴距 Lₑ</b>（第一轴→驱动桥中心）· <b class="v" data-def="l2">销轴距 L₂</b>（鞍座→挂车轴）。本页假设鞍座位于双联桥中心，因此 <b class="v" data-def="kp">鞍座 = 驱动桥中心</b>，一个点。</div>
+  <div class="sub" style="margin-top:-10px;" data-i18n="sub2">标记：<span class="tag law">🔵 法规值</span> 法律写死的判据/常数 &nbsp;·&nbsp; <span class="tag eng">⚪ 工程算法</span> 为验证而推导/约定（法律只要求"结果能装进圆环"）</div>
+
+  <!-- SIDE VIEW -->
+  <div class="card" style="margin-bottom:18px;">
+    <h2 data-i18n="c1h2">6×4 牵引车 + 半挂车 · 参数示意（侧视）<span class="tag eng">⚪ 工程</span></h2>
+    <figure>
+    <svg viewBox="0 0 660 540" style="display:block;width:100%;height:auto;max-width:660px;" role="img" aria-label="6x4 tractor semitrailer side view with 有效轴距/前置距/销轴距/前悬/后悬/牵引销→车尾/牵引销→前端半径/车长/车高">
+      <line x1="20" y1="180" x2="640" y2="180" stroke="#b9c2d2" stroke-width="2"/>
+      <!-- trailer -->
+      <rect x="210" y="52" width="400" height="96" rx="4" fill="#cfd8e6" stroke="#9aa7bc"/>
+      <path d="M210,148 L210,128 L296,128 L310,146 L310,148 Z" fill="#c3cddc" stroke="#9aa7bc"/>
+      <!-- tractor -->
+      <rect x="30" y="155" width="332" height="7" rx="2" fill="#64748b"/>
+      <rect x="296" y="148" width="52" height="7" rx="2" fill="#475569"/>
+      <!-- 6×4 低风阻造型驾驶室：白色车身、车顶深色玻璃遮阳、低矮前脸 -->
+      <path d="M30,162 L30,132 C30,116 33,104 41,93 C52,77 72,66 96,63 L130,62 C139,62 143,69 143,84 L145,162 Z" fill="#f2f5f9" stroke="#9aa7bc" stroke-width="1.2"/>
+      <path d="M36,118 C41,99 53,82 71,72 C80,67 91,64 103,63.5 L119,63 L119,72.5 C99,75 80,86 66,102 C60,109 55,114 52,121 L37,121 Z" fill="#242c38"/>
+      <rect x="31" y="128" width="12" height="3.5" rx="1.7" fill="#3a4658"/>
+      <path d="M30,150 L145,150 L145,162 L30,162 Z" fill="#dde4ee"/>
+      <!-- 鞍座/牵引销 kingpin: bold crosshair marker, at tandem centre (raised clear of wheels) -->
+      <g id="def-kp">
+      <circle cx="322.5" cy="138" r="6" fill="none" stroke="#d97706" stroke-width="3"/>
+      <line x1="314.5" y1="138" x2="330.5" y2="138" stroke="#d97706" stroke-width="2.2"/>
+      <line x1="322.5" y1="130" x2="322.5" y2="146" stroke="#d97706" stroke-width="2.2"/>
+      <circle cx="322.5" cy="138" r="2.8" fill="#8a4e07"/>
+      </g>
+      <!-- wheels: axle1(92) axle2(300) axle3(345) trailer(520,565) -->
+      <g>
+        <circle cx="92"  cy="162" r="18" fill="#1f2937"/><circle cx="92"  cy="162" r="7" fill="#6b7688"/>
+        <circle cx="300" cy="162" r="18" fill="#1f2937"/><circle cx="300" cy="162" r="7" fill="#6b7688"/>
+        <circle cx="345" cy="162" r="18" fill="#1f2937"/><circle cx="345" cy="162" r="7" fill="#6b7688"/>
+        <circle cx="520" cy="162" r="18" fill="#1f2937"/><circle cx="520" cy="162" r="7" fill="#6b7688"/>
+        <circle cx="565" cy="162" r="18" fill="#1f2937"/><circle cx="565" cy="162" r="7" fill="#6b7688"/>
+      </g>
+      <!-- tandem centre marker -->
+      <line x1="322.5" y1="152" x2="322.5" y2="180" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 3"/>
+      <!-- feature callouts -->
+      <g font-size="13" fill="#3a4658" text-anchor="middle" font-family="inherit">
+        <line x1="92" y1="34" x2="92" y2="142" stroke="#e2e8f0"/><text x="92" y="28" data-i18n="sv_axle1">第一轴 axle1</text>
+        <text x="322" y="28" data-i18n="sv_drive2">驱动桥 ×2（6×4）</text>
+        <line x1="300" y1="40" x2="300" y2="142" stroke="#e2e8f0"/><text x="300" y="42" font-size="13" data-i18n="sv_axle2">第二轴</text>
+        <line x1="345" y1="40" x2="345" y2="142" stroke="#e2e8f0"/><text x="345" y="42" font-size="13" data-i18n="sv_axle3">第三轴</text>
+        <line x1="322.5" y1="128" x2="258" y2="70" stroke="#cbd5e1"/><text x="196" y="56" font-weight="700" fill="#0e1726" data-i18n="sv_kp">鞍座·牵引销 ＝ 双联桥中心</text><text x="196" y="68" font-size="13">fifth wheel · kingpin</text>
+        <line x1="542" y1="34" x2="542" y2="142" stroke="#e2e8f0"/><text x="542" y="28" data-i18n="sv_traxle">挂车轴</text>
+      </g>
+      <!-- guides to dim rows -->
+      <g stroke="#e6ebf3" stroke-width="1">
+        <line x1="92" y1="180" x2="92" y2="316"/><line x1="300" y1="180" x2="300" y2="232"/>
+        <line x1="345" y1="180" x2="345" y2="204"/><line x1="322.5" y1="180" x2="322.5" y2="416"/>
+        <line x1="542" y1="180" x2="542" y2="264"/>
+        <line x1="20" y1="180" x2="20" y2="504"/><line x1="210" y1="180" x2="210" y2="372"/>
+        <line x1="565" y1="180" x2="565" y2="460"/><line x1="610" y1="180" x2="610" y2="504"/>
+      </g>
+      <!-- dimensions -->
+      <g text-anchor="middle" font-family="inherit">
+        <!-- 有效轴距 Le: axle1(92)->tandem centre(322.5) -->
+        <line x1="92" y1="204" x2="322.5" y2="204" stroke="#0d7d74" stroke-width="2"/>
+        <line x1="92" y1="198" x2="92" y2="210" stroke="#0d7d74" stroke-width="2"/><line x1="322.5" y1="198" x2="322.5" y2="210" stroke="#0d7d74" stroke-width="2"/>
+        <text id="def-le" x="207" y="224" font-size="15" font-weight="800" fill="#0d7d74" data-i18n="sv_le">有效轴距 Lₑ</text>
+        <text x="207" y="236" font-size="13" font-weight="600" fill="#0d7d74" data-i18n="sv_le2">第一轴→驱动桥中心 · Effective wheelbase</text>
+        <!-- 驱动桥间距 s: axle2(300)->axle3(345), own row above the Le row -->
+        <line x1="300" y1="190" x2="345" y2="190" stroke="#334155" stroke-width="2"/>
+        <line x1="300" y1="184" x2="300" y2="196" stroke="#334155" stroke-width="2"/><line x1="345" y1="184" x2="345" y2="196" stroke="#334155" stroke-width="2"/>
+        <line x1="348" y1="190" x2="405" y2="186" stroke="#cbd5e1"/><text id="def-s" x="452" y="186" font-size="13" font-weight="700" fill="#334155" data-i18n="sv_s">桥间距 s（第二→第三轴）</text>
+        <!-- 销轴距 L2: kingpin(=tandem centre 322.5)->trailer axle centre(542) -->
+        <line x1="322.5" y1="264" x2="542" y2="264" stroke="#6d5bd0" stroke-width="2"/>
+        <line x1="322.5" y1="258" x2="322.5" y2="270" stroke="#6d5bd0" stroke-width="2"/><line x1="542" y1="258" x2="542" y2="270" stroke="#6d5bd0" stroke-width="2"/>
+        <text id="def-l2" x="432" y="284" font-size="15" font-weight="800" fill="#6d5bd0" data-i18n="sv_l2">销轴距 L₂（鞍座→挂车轴 · Kingpin→axle）</text>
+        <!-- 前悬 Front overhang: front nose(20)->axle1(92) -->
+        <line x1="20" y1="310" x2="92" y2="310" stroke="#db2777" stroke-width="2"/>
+        <line x1="20" y1="304" x2="20" y2="316" stroke="#db2777" stroke-width="2"/><line x1="92" y1="304" x2="92" y2="316" stroke="#db2777" stroke-width="2"/>
+        <text id="def-overhangF" x="56" y="330" font-size="15" font-weight="800" fill="#db2777" data-i18n="sv_ohF">前悬</text>
+        <text x="56" y="342" font-size="13" font-weight="600" fill="#db2777" data-i18n="sv_ohF2">车头最前点→第一轴</text>
+        <!-- 牵引销→前端半径 Kingpin->front radius (≤2.04m): trailer front(210)->kp(322.5) -->
+        <line x1="210" y1="354" x2="322.5" y2="354" stroke="#7c3aed" stroke-width="2"/>
+        <line x1="210" y1="348" x2="210" y2="360" stroke="#7c3aed" stroke-width="2"/><line x1="322.5" y1="348" x2="322.5" y2="360" stroke="#7c3aed" stroke-width="2"/>
+        <text id="def-204" x="266" y="374" font-size="15" font-weight="800" fill="#7c3aed" data-i18n="sv_204">牵引销→前端半径 ≤ 2.04 m</text>
+        <text x="266" y="386" font-size="13" font-weight="600" fill="#7c3aed" data-i18n="sv_2042">鞍座→挂车前端</text>
+        <!-- 牵引销→车尾 Kingpin to rear (≤12.00m): kp(322.5)->trailer rear(610) -->
+        <line x1="322.5" y1="398" x2="610" y2="398" stroke="#4338ca" stroke-width="2"/>
+        <line x1="322.5" y1="392" x2="322.5" y2="404" stroke="#4338ca" stroke-width="2"/><line x1="610" y1="392" x2="610" y2="404" stroke="#4338ca" stroke-width="2"/>
+        <text id="def-ktr" x="466" y="418" font-size="15" font-weight="800" fill="#4338ca" data-i18n="sv_ktr">牵引销→车尾 ≤ 12.00 m</text>
+        <text x="466" y="430" font-size="13" font-weight="600" fill="#4338ca" data-i18n="sv_ktr2">鞍座→挂车尾部</text>
+        <!-- 后悬 Rear overhang: last trailer axle(565)->trailer rear(610) -->
+        <line x1="565" y1="442" x2="610" y2="442" stroke="#0891b2" stroke-width="2"/>
+        <line x1="565" y1="436" x2="565" y2="448" stroke="#0891b2" stroke-width="2"/><line x1="610" y1="436" x2="610" y2="448" stroke="#0891b2" stroke-width="2"/>
+        <text id="def-overhangR" x="587" y="462" font-size="15" font-weight="800" fill="#0891b2" text-anchor="end" data-i18n="sv_ohR">后悬</text>
+        <text x="587" y="474" font-size="13" font-weight="600" fill="#0891b2" text-anchor="end" data-i18n="sv_ohR2">末轴→尾部</text>
+        <!-- 车长 Overall length: front(20)->trailer rear(610), full span -->
+        <line x1="20" y1="486" x2="610" y2="486" stroke="#9f1239" stroke-width="2"/>
+        <line x1="20" y1="480" x2="20" y2="492" stroke="#9f1239" stroke-width="2"/><line x1="610" y1="480" x2="610" y2="492" stroke="#9f1239" stroke-width="2"/>
+        <text id="def-len" x="315" y="506" font-size="15" font-weight="800" fill="#9f1239" data-i18n="sv_len">车长</text>
+        <text x="315" y="518" font-size="13" font-weight="600" fill="#9f1239" data-i18n="sv_len2">示意：铰接车上限 16.50 m</text>
+        <!-- 车高 Height: vertical bracket to the right of the trailer -->
+        <line x1="625" y1="52" x2="625" y2="180" stroke="#65a30d" stroke-width="2"/>
+        <line x1="619" y1="52" x2="631" y2="52" stroke="#65a30d" stroke-width="2"/><line x1="619" y1="180" x2="631" y2="180" stroke="#65a30d" stroke-width="2"/>
+        <text id="def-height" x="646" y="116" font-size="15" font-weight="800" fill="#65a30d" text-anchor="middle" transform="rotate(-90 646 116)" data-i18n="sv_height">车高 ≤ 4.00 m</text>
+      </g>
+    </svg>
+    </figure>
+    <p class="note" data-i18n="c1note"><strong>有效轴距 Lₑ</strong> = 第一轴 → 驱动桥中心（6×4 双联桥量到两桥中间）。本页假设鞍座装在双联桥正中 → <strong>Lₑ 的终点和 L₂ 的起点是同一个点（⊕）</strong>，两段首尾相接不重叠。</p>
+    <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:12px;">
+      <div style="display:flex;">
+        <div style="flex:0 0 13.94%;"></div>
+        <div style="flex:0 0 34.92%;text-align:center;padding:0 4px;">
+          <label style="display:block;color:#0d7d74;font-size:13px;font-weight:700;margin-bottom:4px;" data-i18n="lab_le">有效轴距 Lₑ</label>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <input id="wb" type="number" min="3" max="8" step="0.01" value="5.33" style="width:64px;font:inherit;font-weight:800;color:#0d7d74;border:1.5px solid #0d7d74;border-radius:6px;padding:3px 5px;text-align:center;">
+            <span style="color:#0d7d74;font-size:13px;">m</span>
+          </div>
+          <input id="wbR" type="range" min="3" max="8" step="0.05" value="5.33" style="width:100%;accent-color:#0d7d74;margin-top:6px;">
+        </div>
+        <div style="flex:0 0 33.26%;text-align:center;padding:0 4px;">
+          <label style="display:block;color:#6d5bd0;font-size:13px;font-weight:700;margin-bottom:4px;" data-i18n="lab_l2">销轴距 L₂</label>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <input id="kp" type="number" min="3" max="10" step="0.01" value="7.50" style="width:64px;font:inherit;font-weight:800;color:#6d5bd0;border:1.5px solid #6d5bd0;border-radius:6px;padding:3px 5px;text-align:center;">
+            <span style="color:#6d5bd0;font-size:13px;">m</span>
+          </div>
+          <input id="kpR" type="range" min="3" max="10" step="0.05" value="7.50" style="width:100%;accent-color:#6d5bd0;margin-top:6px;">
+        </div>
+        <div style="flex:1;"></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:10px;" data-i18n="c1ctrlnote">直接输入数值，或拖动下方滑块调整 Lₑ / L₂ → 下方动画、公式与各表格实时同步更新。</p>
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;">
+      <h2 style="font-size:17px;margin:0 0 10px;" data-i18n="c10h2">实时合规判定 · Live compliance check<span class="tag law">🔵 法规相关</span></h2>
+      <div class="readout">
+        <div class="ro" style="grid-column:1/3;"><div class="k" data-i18n="ro_cmp">满足内圆</div><div class="v" id="cmp">–</div></div>
+        <div class="ro" style="grid-column:1/3;"><div class="k v" data-def="dtcrow" data-i18n="ro_dtc">半挂销轴距上限（EU 视为合规 · W=2.55）</div><div class="v" id="dtc">–</div></div>
+      </div>
+      <p class="note" data-i18n="c10note">这里只显示与法规门槛直接相关的判定；Lₑ/L₂/Rᵢ 各自的具体数值见下方各自的独立小节。</p>
+    </div>
+  </div>
+
+  <div style="margin-top:26px;padding:14px 14px 4px;border:2px dashed #c7d2e3;border-radius:16px;background:rgba(109,91,208,.03);">
+  <div style="font-size:13px;font-weight:800;color:#6d5bd0;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px 4px;" data-i18n="formulasLabel">◆ 公式 + 法规 · 定义 · 演示 · 推导 · 分步计算 · 各国判据 · 来源 · Formulas &amp; Regulations — definition, demo, derivation, step-by-step, per-country rules &amp; sources, all in one place</div>
+  <div class="card" style="margin-top:18px;border-left:4px solid #0d7d74;">
+    <h2 data-i18n="pLe_h2"><span style="color:#0d7d74">Lₑ</span> · 有效轴距（第一轴→驱动桥中心）<span class="tag eng">⚪ 工程参数</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pLe_note">Lₑ 是<strong>牵引车自己的设计尺寸</strong>，不是某国直接写死的限值——目前查无任何国家对 Lₑ 本身单独设上限。它通过两条路径间接受限：① 转弯几何公式（Lₑ 越大，挤占 L₂ 的余量越多）；② 铰接列车总长上限（12/16.5/18.75 m，详见下方"车长/总重"一节，各国同一套欧盟基准 + 各自的 HCT 加长方案）。页面默认示例取 <b class="v" data-def="le">5.33 m</b>（= 名义轴距 4.65 + 桥间距 1.35 的一半，请按实际车型填写）。</p>
+    <table>
+      <thead><tr data-i18n="pLe_thead"><th>国家/市场 Country</th><th style="color:#c0392b">内圆阈值</th><th>给定当前 L₂ 时，Lₑ 上限（实时）</th><th>当前参数是否达标</th></tr></thead>
+      <tbody data-i18n="pLe_tbody">
+        <tr><td>🇪🇺 欧盟基准 / 🇧🇪 比利时 / 🇩🇰 丹麦</td><td style="color:#c0392b;font-weight:700">5.3 m</td><td class="v" data-def="le" style="color:#0d7d74;font-weight:700" id="s_lemax_eu">–</td><td id="s_leok_eu">–</td></tr>
+        <tr><td>🇸🇪 瑞典 / 🇳🇴 挪威</td><td style="color:#c0392b;font-weight:700">2.0 m</td><td class="v" data-def="le" style="color:#0d7d74;font-weight:700" id="s_lemax_sn">–</td><td id="s_leok_sn">–</td></tr>
+        <tr><td>🇫🇮 芬兰</td><td colspan="3" style="text-align:left;color:var(--muted);">不适用此公式——芬兰用 120° 定角+尾摆测试，不是"给定 L₂ 反解 Lₑ 上限"的圆公式（见下方 Rᵢ 一节）</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="pLe_note2">解法：Lₑ<sub>max</sub> = √(156.25 − L₂² − 内圆²)——同一个公式，固定住 L₂，反解 Lₑ。拖动最上方"侧视图"卡片里的滑块，这张表跟着实时变化。</p>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="le" data-i18n="pLe_jump" style="color:#0d7d74;font-weight:700;cursor:pointer;">↑ 跳到 Lₑ 最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #6d5bd0;">
+    <h2 data-i18n="pL2_h2"><span style="color:#6d5bd0">L₂</span> · 销轴距（鞍座→挂车轴）<span class="tag law">🔵 部分法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pL2_note">L₂ 是<strong>所配半挂车自己的尺寸</strong>，但欧盟法规专门给了一条"视为合规"的<strong>固定门槛公式</strong>（不随 Lₑ 变化）：</p>
+    <div class="formula" style="font-size:13px;padding:10px 14px;">L₂<sub>视为合规</sub> = √((12.5−2.04)²−(5.3+W/2)²) ≈ <b id="def-dtcrow" class="v" data-def="dtcrow" style="color:#6d5bd0">8.135 m</b>（<span id="def-w" style="color:#a21caf;font-weight:700">W=2.55</span>）</div>
+    <p class="note" style="margin-top:0" data-i18n="pL2_note1a"><strong>关键发现：瑞典法规逐字复用了同一组常数</strong>（12.50 / 2.04 / 5.30），并非各国各写一套——这条"视为合规"捷径公式在瑞典和欧盟是同一条，即使瑞典自己的完整转弯圆测试用的内圆是 2.0 m 而非 5.3 m。</p>
+    <table>
+      <thead><tr data-i18n="pL2_thead1"><th>国家/市场 Country</th><th>"视为合规"捷径门槛</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pL2_tbody1">
+        <tr><td>🇪🇺 欧盟基准</td><td style="color:#6d5bd0;font-weight:700">8.135 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230" target="_blank" rel="noopener">Reg 1230/2012</a></td></tr>
+        <tr><td>🇸🇪 瑞典 Sweden</td><td style="color:#6d5bd0;font-weight:700">8.135 m（同一公式，同一组常数）</td><td style="text-align:left;"><a class="src" href="https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf" target="_blank" rel="noopener">TSFS 2012:126</a> §2</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin:14px 0 0;" data-i18n="pL2_note2">但"捷径"只是免测试的门槛——若 L₂ 超过 8.135 m，仍可能通过完整转弯圆测试合规，只是各国圆的"及格线"（内圆）不同：给定当前 Lₑ，各国完整测试实际允许的 L₂ 上限（实时）——</p>
+    <table>
+      <thead><tr data-i18n="pL2_thead2"><th>国家/市场 Country</th><th style="color:#c0392b">内圆阈值</th><th>给定当前 Lₑ 时，L₂ 上限（实时）</th><th>当前参数是否达标</th></tr></thead>
+      <tbody data-i18n="pL2_tbody2">
+        <tr><td>🇪🇺 欧盟基准 / 🇧🇪 比利时 / 🇩🇰 丹麦</td><td style="color:#c0392b;font-weight:700">5.3 m</td><td class="v" data-def="l2" style="color:#6d5bd0;font-weight:700" id="s_l2max_eu">–</td><td id="s_l2ok_eu">–</td></tr>
+        <tr><td>🇸🇪 瑞典 / 🇳🇴 挪威</td><td style="color:#c0392b;font-weight:700">2.0 m</td><td class="v" data-def="l2" style="color:#6d5bd0;font-weight:700" id="s_l2max_sn">–</td><td id="s_l2ok_sn">–</td></tr>
+        <tr><td>🇫🇮 芬兰</td><td colspan="3" style="text-align:left;color:var(--muted);">不适用此公式——见下方 Rᵢ 一节的 120° 定角测试</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="pL2_note3"><strong>反直觉的地方：</strong>瑞典/挪威完整测试的内圆更小（2.0 m vs 欧盟 5.3 m），及格线反而更松——同一辆 Lₑ 固定的车，瑞典/挪威完整测试允许的 L₂ 比欧盟基准更长。</p>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="l2" data-i18n="pL2_jump" style="color:#6d5bd0;font-weight:700;cursor:pointer;">↑ 跳到 L₂ 最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h2 data-i18n="c2h2">计算公式<span class="tag eng">⚪ 工程算法</span></h2>
+    <div class="formula"><span id="def-ri" style="color:#a16207;font-weight:800">R<sub>i</sub></span> = √( <span id="def-r" style="color:#2563eb;font-weight:800">R</span>² − <span style="color:#0d7d74;font-weight:800">L<sub>e</sub></span>² − <span style="color:#6d5bd0;font-weight:800">L₂</span>² )
+      <small data-i18n="c2small">（式子=⚪工程推导；<span style="color:#2563eb">R=12.5</span> 及内圆 5.3/2.0 是🔵法规值）<br><span class="v" data-def="r" style="color:#2563eb;font-weight:700">R</span> 前轴 12.5 m · <span class="v" data-def="le" style="color:#0d7d74;font-weight:700">Lₑ</span> 有效轴距 · <span class="v" data-def="l2" style="color:#6d5bd0;font-weight:700">L₂</span> 销轴距 · <span class="v" data-def="ri" style="color:#a16207;font-weight:700">Rᵢ</span> 挂车稳态半径<br>（若鞍座相对驱动桥中心前移 e，公式加一项 +e²；本页默认 e=0，不出现）</small>
+    </div>
+  </div>
+
+  <!-- ANIMATION -->
+    <div class="card" id="def-anim" style="margin-top:18px;">
+      <h2 data-i18n="c9h2">俯视 · 入弯过程（动画 + 推导 + 通俗版）<span class="tag eng">⚪ 工程示意</span></h2>
+      <canvas id="c" width="640" height="515"></canvas>
+      <div class="legend" data-i18n="c9legend">
+        <span><i style="border-color:#2563eb"></i>前轴轨迹（R）</span>
+        <span><i style="border-color:#a16207"></i>挂车轴轨迹（内偏 · Rᵢ）</span>
+        <span><i style="border-color:#2563eb;border-top-style:dashed"></i>12.5 m 前轴基准（R）</span>
+        <span><i style="border-color:#a16207;border-top-style:dashed"></i>Rᵢ 挂车稳态</span>
+        <span><i style="border-color:#c0392b;border-top-style:dotted"></i>5.3 欧盟（内圆）</span>
+        <span><i style="border-color:#c0392b;border-top-style:dashed"></i>2.0 芬兰（内圆）</span>
+        <span><i style="border-color:#7c3aed;border-top-style:dashed"></i>2.04 m 半挂前端半径（绕鞍座）</span>
+      </div>
+      <div class="row"><button id="play">⏸ 暂停</button><button id="reset" data-i18n="btnreset">↺ 重播</button></div>
+
+      <details style="margin-top:16px;border-top:1px solid var(--line);padding-top:10px;">
+        <summary style="cursor:pointer;font-size:15px;font-weight:800;list-style:none;" data-i18n="kidsum">🧒 通俗解释：上面的动画在演什么？（点开/收起）</summary>
+        <div style="margin-top:10px;">
+          <p style="font-size:13px;" data-i18n="kidp1">🚚 一辆大卡车掉头拐大弯：<b style="color:#2563eb">前轮走外面的大圈</b>（就是上面动画的蓝线），可是<b style="color:#a16207">车尾和挂车会偷偷往里抄近路</b>（金棕线），走到更小的圈上。<br>
+          法规说：拐弯时车要能塞进<b>两个圈中间</b>——外圈大、内圈小。只要车尾没越过内圈，就过关。</p>
+          <p style="font-size:13px;margin:8px 0 0;" data-i18n="kidp2"><b>最上面卡片里的那条公式，算的就是"车尾能抄到多小的圈 Rᵢ"</b>——也就是动画里那条棕色轨迹稳定下来之后画出的圈。</p>
+          <ul style="font-size:13px;margin:6px 0;padding-left:20px;line-height:1.8;" data-i18n="kidul">
+            <li><b style="color:#2563eb">R</b>=前轮大圈 12.5 米（规定）· <b style="color:#0d7d74">Lₑ</b>=车头有多长 · <b style="color:#6d5bd0">L₂</b>=挂车有多长 · <b style="color:#a16207">Rᵢ</b>=车尾的小圈（算出来的）</li>
+            <li><b>车越长（Lₑ、L₂）→ 抄得越里 → 圈变小 → 带减号 −</b></li>
+            <li>挂钩（鞍座 ⊕）正好在车头后轮中间，Lₑ 到它结束、L₂ 从它开始。</li>
+            <li>"乘自己"（平方）和"√"是三角形的规矩（勾股，中学学）：每个长度先自己乘自己，加减完再√还原成一个长度——下面"为什么是平方和"里有完整证明。</li>
+          </ul>
+          <p style="font-size:13px;margin:6px 0 0;" data-i18n="kidp3">✅ 算出的 <b style="color:#a16207">Rᵢ</b> 只要还比内圈大，就拐得过去。按当前参数：Rᵢ=<b>8.45 米</b> &gt; 欧盟 5.3、芬兰 2.0 → 能拐。<br>
+          <span style="color:#6b7688;">一句话：车越长屁股越往里抄；公式就是算屁股最里能到多小的圈，别比规定内圈还小就行。</span></p>
+        </div>
+      </details>
+
+      <details style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+        <summary style="cursor:pointer;font-size:15px;font-weight:800;list-style:none;" data-i18n="c5h2sum">📐 严谨版：为什么是平方和？· 几何推导（勾股）（点开/收起）</summary>
+        <div style="margin-top:10px;">
+        <p class="note" style="margin-top:0" data-i18n="c5note1">用真车看：转弯时 <strong>驱动桥（滚动轴）</strong>、<strong>前轴</strong>、<strong>转弯中心 O</strong> 正好构成一个<strong>直角三角形</strong>（直角在驱动桥）。前轴半径 <span style="color:#2563eb;font-weight:700">R</span> 是斜边，驱动桥半径 <span style="color:#334155;font-weight:700">r</span> 是短边 → 所以 <span style="color:#334155;font-weight:700">r</span> = √(<span style="color:#2563eb">R²</span> − <span style="color:#0d7d74">L²</span>)，驱动桥被"往后拖"就往里偏。</p>
+        <figure>
+        <svg viewBox="0 0 680 450" style="display:block;width:100%;height:auto;max-width:680px;" role="img" aria-label="Truck drawn onto the right-triangle derivation">
+          <!-- circle arcs around O -->
+          <circle cx="300" cy="410" r="270" fill="none" stroke="#e2e8f0" stroke-dasharray="4 5"/>
+          <circle cx="300" cy="410" r="374.8" fill="none" stroke="#dbe6f7" stroke-dasharray="4 5"/>
+          <!-- triangle legs -->
+          <line x1="300" y1="410" x2="300" y2="140" stroke="#334155" stroke-width="2.5"/>            <!-- r (O->drive axle) -->
+          <line x1="300" y1="140" x2="560" y2="140" stroke="#0d7d74" stroke-width="2.5"/>            <!-- L (drive->front) -->
+          <line x1="300" y1="410" x2="560" y2="140" stroke="#2563eb" stroke-width="2.5"/>            <!-- R (O->front axle) -->
+          <rect x="300" y="140" width="20" height="20" fill="none" stroke="#334155" stroke-width="1.5"/>
+          <!-- ==== TRACTOR (plan view along drive->front) ==== -->
+          <rect x="272" y="119" width="316" height="42" rx="5" fill="#e4e9f1" stroke="#9aa7bc"/>
+          <path d="M545,119 L566,119 C583,121 590,129 590,140 C590,151 583,159 566,161 L545,161 Z" fill="#c6d0de" stroke="#9aa7bc"/>  <!-- aero cab, rounded nose -->
+          <!-- axles (crosswise) + wheels -->
+          <g stroke="#475569" stroke-width="3">
+            <line x1="300" y1="108" x2="300" y2="172"/><line x1="326" y1="108" x2="326" y2="172"/><line x1="560" y1="108" x2="560" y2="172"/>
+          </g>
+          <g fill="#1f2937">
+            <rect x="294" y="100" width="12" height="12"/><rect x="294" y="168" width="12" height="12"/>
+            <rect x="320" y="100" width="12" height="12"/><rect x="320" y="168" width="12" height="12"/>
+            <rect x="554" y="100" width="12" height="12"/><rect x="554" y="168" width="12" height="12"/>
+          </g>
+          <!-- dots -->
+          <circle cx="300" cy="410" r="4.5" fill="#0e1726"/><circle cx="300" cy="140" r="4.5" fill="#0e1726"/><circle cx="560" cy="140" r="4.5" fill="#0e1726"/>
+          <!-- labels -->
+          <text x="290" y="432" font-size="13" font-weight="700" fill="#0e1726" text-anchor="end" data-i18n="pv_O">转弯中心 O</text>
+          <text x="288" y="205" font-size="13" font-weight="700" fill="#334155" text-anchor="end" data-i18n="pv_drive">驱动桥（滚动轴）</text>
+          <text x="560" y="98" font-size="13" font-weight="700" fill="#2563eb" text-anchor="middle" data-i18n="pv_front">前轴</text>
+          <text x="430" y="112" font-size="15" font-weight="800" fill="#0d7d74" text-anchor="middle" data-i18n="pv_L">L = 有效轴距 Lₑ</text>
+          <text x="272" y="290" font-size="15" font-weight="800" fill="#334155" text-anchor="end" data-i18n="pv_r">r（驱动桥半径）</text>
+          <text x="452" y="290" font-size="15" font-weight="800" fill="#2563eb" transform="rotate(-46 452 290)" data-i18n="pv_R">R（前轴半径）</text>
+          <text x="290" y="310" font-size="13" fill="#6b7688" text-anchor="end" data-i18n="pv_perp">O 在滚动轴的垂线上 → 90°</text>
+          <!-- formula box -->
+          <g font-family="inherit">
+            <rect x="360" y="330" width="312" height="96" rx="8" fill="#f7fafc" stroke="#d7deea"/>
+            <text x="374" y="356" font-size="15" font-weight="800" fill="#0e1726" data-i18n="pv_pyth">勾股：<tspan fill="#2563eb">R²</tspan> = <tspan fill="#334155">r²</tspan> + <tspan fill="#0d7d74">L²</tspan></text>
+            <text x="374" y="382" font-size="15" font-weight="700" fill="#334155">⟹ r = √( <tspan fill="#2563eb">R²</tspan> − <tspan fill="#0d7d74">L²</tspan> )</text>
+            <text x="374" y="404" font-size="13" fill="#3a4658" data-i18n="pv_drag">驱动桥被"往后拖" L → r &lt; R → 向内偏</text>
+            <text x="374" y="420" font-size="13" fill="#0d7d74" font-weight="700" data-i18n="pv_hence">→ 公式里出现 −L²</text>
+          </g>
+        </svg>
+        </figure>
+        <p class="note" data-i18n="c5note2">挂车同理再来一次：把<strong>鞍座（=驱动桥中心 ⊕）</strong>当"前点"、<strong>挂车轴</strong>当"滚动轴"，又是一个直角三角形 → 再 −L₂²。两次勾股，一气呵成：</p>
+        <!-- chain -->
+        <div style="overflow-x:auto;">
+        <svg viewBox="0 0 660 96" style="display:block;width:100%;height:auto;max-width:660px;" role="img" aria-label="4-step chain">
+          <g font-family="inherit" font-size="13" text-anchor="middle">
+            <rect x="40" y="30" width="110" height="34" rx="6" fill="#eaf1fb" stroke="#2563eb"/><text x="95" y="46" font-weight="800" fill="#2563eb" data-i18n="ch_front">前轴</text><text x="95" y="59" fill="#2563eb">R = 12.5</text>
+            <text x="205" y="44" font-size="13" font-weight="800" fill="#0d7d74">−Lₑ²</text><text x="205" y="58" font-size="13" fill="#6b7688" data-i18n="ch_drag">往后拖</text>
+            <rect x="260" y="30" width="150" height="34" rx="6" fill="#fbefdc" stroke="#d97706"/><text x="335" y="46" font-weight="800" fill="#8a4e07" data-i18n="ch_kp">⊕ 驱动桥中心＝鞍座</text><text x="335" y="59" fill="#8a4e07">R_k</text>
+            <text x="465" y="44" font-size="13" font-weight="800" fill="#6d5bd0">−L₂²</text><text x="465" y="58" font-size="13" fill="#6b7688" data-i18n="ch_drag">往后拖</text>
+            <rect x="520" y="30" width="110" height="34" rx="6" fill="#fdf1db" stroke="#a16207"/><text x="575" y="46" font-weight="800" fill="#a16207" data-i18n="ch_traxle">挂车轴</text><text x="575" y="59" fill="#a16207">R_i</text>
+            <!-- arrows -->
+            <g stroke="#94a3b8" stroke-width="1.4"><line x1="152" y1="47" x2="256" y2="47"/><line x1="412" y1="47" x2="516" y2="47"/></g>
+          </g>
+        </svg>
+        </div>
+        <p class="note" data-i18n="c5note3">两次勾股链起来，正是最上面卡片里的那条公式：每"往后拖"一段就 <b style="color:#0d7d74">−</b> 一次平方（向内偏、吃余量）。要求 R_i ≥ 内圆 → <b>Lₑ² + L₂² ≤ 12.5² − 内圆²</b>。（若鞍座前移 e，中间多一步 +e²。）</p>
+        <div class="note" style="margin-top:12px;background:#f4f7fb;border:1px solid var(--line);border-radius:10px;padding:12px 14px;">
+          <span data-i18n="c5law"><strong style="color:#0e1726;">法规假设的是"角度"还是"半径"？</strong><br>
+          <b style="color:#2563eb;">① 欧盟通道圆（96/53/EC）— 不假设角度。</b>它规定的是<strong>两个半径</strong>（外 12.5 / 内 5.3 m）+ 车辆要走完<strong>整整 360°</strong>。铰接角不是输入、而是结果（沿此圆稳态绕行时约 <b>41°</b>）。<br>
+          本页公式取的正是<strong>"转到底 · 进入定圆"的稳态</strong>——也就是该半径对应的<strong>最大铰接角</strong>，是偏移最大的<b style="color:#c0392b;">最不利工况</b>；上方动画的"直线→入弯"过渡段偏移还没到这个最大值。<br>
+          <b style="color:#ea580c;">② 芬兰 — 用的不是 360° 满圆，而是一次性 120° 定角测试。</b>现行规则（Tieliikennelaki 729/2018 §132 + 附件9，Traficom 规定 TRAFICOM/304841/03.04.03.00/2019，2020年6月起施行）：外径 <b>12.50 m</b>，车头转过 <b>120°</b> 时，若<strong>后角侧移 S ≤ 0.80 m</strong>，则内径 R 须 ≥ <b>4.00 m</b>；S 更小时 R 门槛可相应降低，但<strong>绝对下限为 3.70 m</strong>。这一项<strong>显式指定了角度（120°），不是 360° 满圆</strong>——与瑞典/挪威的 360° 满圆测试是两套不同判据。</span>
+        </div>
+        </div>
+      </details>
+    </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid var(--wr);">
+    <h2 data-i18n="c4h2">分步计算 · 可逐层展开到原始参数<span class="tag eng">⚪ 工程算法</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="c4note">点开每个数字 → 显示它的公式与代入值 → 继续点开子项，直到<span class="prim">高亮的原始参数</span>。随滑块实时更新。</p>
+    <div class="calc">
+      <!-- 合规判定 (top) -->
+      <details open><summary data-i18n="c4cmp">合规判定：<b id="s_cmp">–</b></summary>
+        <div class="body" data-i18n="c4cmpbody">把 <b class="v" data-def="ri">Rᵢ</b> 与内圆比较：欧盟 <span class="v" data-def="inner53" style="color:#c0392b">5.3 m</span> / 芬兰 <span class="v" data-def="inner20" style="color:#c0392b">2.0 m</span>。</div>
+
+        <details open><summary><span class="v" data-def="ri" style="color:#a16207;font-weight:700">Rᵢ</span> = <b id="s_ri">–</b></summary>
+          <div class="body"><code>Rᵢ = √(Rᵢ²)</code></div>
+          <details><summary><span class="v" data-def="ri" style="color:#a16207;font-weight:700">Rᵢ²</span> = <b id="s_ri2">–</b> m²</summary>
+            <div class="body"><code>Rᵢ² = R² − Lₑ² − L₂²</code> = <span id="s_ri2expr"></span></div>
+
+            <details><summary><span class="v" data-def="r" style="color:#2563eb;font-weight:700">R²</span> = <b class="v" data-def="r">156.25</b> m²</summary>
+              <div class="body" data-i18n="c4r2body"><code>R² = 12.5²</code>；<span class="prim v" data-def="r">R = 12.5 m</span>（法规外圆基准，原始）</div></details>
+
+            <details><summary><span class="v" data-def="le" style="color:#0d7d74;font-weight:700">Lₑ²</span> = <b id="s_le2">–</b> m²</summary>
+              <div class="body" data-i18n="c4le2body"><code>Lₑ²</code>；先算 Lₑ ↓</div>
+              <details><summary><span class="v" data-def="le" style="color:#0d7d74;font-weight:700">Lₑ</span> = <b id="s_le">–</b></summary>
+                <div class="body" data-i18n="c4lebody"><span class="prim v" data-def="le">有效轴距 Lₑ（第一轴→驱动桥中心）· 原始参数</span></div>
+              </details>
+            </details>
+
+            <details><summary><span class="v" data-def="l2" style="color:#6d5bd0;font-weight:700">L₂²</span> = <b id="s_l22">–</b> m²</summary>
+              <div class="body"><code>L₂²</code></div>
+              <details><summary><span class="v" data-def="l2" style="color:#6d5bd0;font-weight:700">L₂</span> = <b id="s_l2">–</b></summary>
+                <div class="body" data-i18n="c4l2body"><span class="prim v" data-def="l2">销轴距 L₂（鞍座=驱动桥中心→挂车轴）· 原始参数（取决于所配半挂）</span></div></details>
+            </details>
+
+          </details>
+        </details>
+      </details>
+
+      <!-- 后轴偏移 -->
+      <details><summary data-i18n="c4off">后轴偏移 <span class="v" data-def="r">R</span> − <span class="v" data-def="ri">Rᵢ</span> = <b id="s_off">–</b></summary>
+        <div class="body" data-i18n="c4offbody"><code>12.5 − Rᵢ</code>；Rᵢ 见上。</div></details>
+
+      <!-- 半挂销轴距上限 -->
+      <details><summary data-i18n="c4dtc">半挂"视为合规"上限 & L₂ 判定：<b id="s_dtc">–</b></summary>
+        <div class="body" data-i18n="c4dtcbody"><code>上限 = √((12.5−2.04)²−(5.3+W/2)²)</code> = <b class="v" data-def="dtcrow">8.135 m</b>（W=2.55）；比较 <span class="v" data-def="l2" style="color:#6d5bd0;font-weight:700">L₂</span>=<span id="s_l2b"></span>。</div>
+        <details><summary><span class="v" data-def="204" style="color:#7c3aed">2.04 m</span> · <span class="v" data-def="inner53" style="color:#c0392b">5.3 m</span> · <span class="v" data-def="w">W=2.55 m</span></summary>
+          <div class="body" data-i18n="c4prims"><span class="prim">2.04 = 牵引销→半挂前端半径</span> · <span class="prim">5.3 = 欧盟内圆</span> · <span class="prim">W = 车宽</span>（均为法规/原始值）</div></details>
+      </details>
+    </div>
+    <p class="note" data-i18n="c4defaults">页面默认示例值：有效轴距 <b>5.33</b>（= 名义轴距 4.65 + 桥间距 1.35/2）；假设鞍座在双联桥中心（⊕ 一个点）；销轴距 <b>7.50</b>。均可按实际车型用上方滑块修改。</p>
+  </div>
+
+  <div class="note" style="margin:22px 4px 6px;font-size:13px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.03em;" data-i18n="perParamLabel">▾ 逐参数深度剖析（续）· R · 内圆阈值 · Rᵢ · Per-Parameter Deep-Dive (cont'd) — R / Inner Circle Threshold / Rᵢ, each with its own per-country breakdown</div>
+
+  <div class="card" style="margin-top:8px;border-left:4px solid #2563eb;">
+    <h2 data-i18n="pR_h2"><span style="color:#2563eb">R</span> · 外圆半径（前轴基准）<span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pR_note">R 是前轴在稳态转弯时沿行的<strong>外圆半径</strong>——本页唯一一个<strong>各国统一、没有差异</strong>的常数。各国差异全部体现在下面 Rᵢ 一节的"及格线"和测试方法上，不在 R 本身。</p>
+    <table>
+      <thead><tr data-i18n="pR_thead"><th>国家/市场 Country</th><th>R 值</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pR_tbody">
+        <tr><td>🇪🇺 欧盟基准 / 🇧🇪 比利时</td><td style="color:#2563eb;font-weight:700">12.5 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a></td></tr>
+        <tr><td>🇸🇪 瑞典 Sweden</td><td style="color:#2563eb;font-weight:700">12.5 m</td><td style="text-align:left;"><a class="src" href="https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf" target="_blank" rel="noopener">TSFS 2012:126</a> §2</td></tr>
+        <tr><td>🇳🇴 挪威 Norway</td><td style="color:#2563eb;font-weight:700">12.5 m</td><td style="text-align:left;"><a class="src" href="https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9" target="_blank" rel="noopener">forskrift FOR-2009-01-20-78</a> §9</td></tr>
+        <tr><td>🇫🇮 芬兰 Finland</td><td style="color:#2563eb;font-weight:700">12.5 m</td><td style="text-align:left;"><a class="src" href="https://www.finlex.fi/fi/laki/ajantasa/2018/20180729" target="_blank" rel="noopener">Tieliikennelaki 729/2018</a> §132</td></tr>
+        <tr><td>🇩🇰 丹麦 Denmark</td><td style="color:#2563eb;font-weight:700">12.5 m</td><td style="text-align:left;"><a class="src" href="https://www.lovtidende.dk/api/pdf/253937" target="_blank" rel="noopener">BEK 1447/2025</a> §5</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="r" data-i18n="pR_jump" style="color:#2563eb;font-weight:700;cursor:pointer;">↑ 跳到 R 最早出现的地方（计算公式卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #c0392b;" id="def-inner">
+    <h2 data-i18n="pInner_h2">内圆 · 及格线阈值（Rᵢ 必须达到的下限）<span class="tag law">🔵 法规值 · 各国不同</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pInner_note0">内圆是公式里<strong>第二个直接写死的常数</strong>——但和 R 不一样，它<strong>逐国不同</strong>，而且芬兰甚至不是用"一个内圆数字"来判定的。这是每个国家的转弯合规判据真正分岔的地方。</p>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr data-i18n="asumthead"><th>国家 Country</th><th>测试几何</th><th>建模对象</th><th>外径 R</th><th style="color:#c0392b">内圆阈值</th><th>适用范围</th><th>法规依据 · 来源 Source</th></tr></thead>
+      <tbody data-i18n="asumtbody">
+        <tr id="def-inner20"><td style="text-align:left;font-weight:700;">🇸🇪 瑞典</td><td>360° 满圆</td><td>稳态 · 转到底（最不利工况）</td><td style="color:#2563eb">12.5 m</td><td class="be" style="color:#c0392b;font-weight:700">≥ 2.0 m</td><td>&gt;24.0m 模块组合</td><td style="text-align:left;"><a class="src" href="https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf" target="_blank" rel="noopener">TSFS 2012:126</a> §2</td></tr>
+        <tr><td style="text-align:left;font-weight:700;">🇳🇴 挪威</td><td>360° 满圆</td><td>稳态 · 转到底（最不利工况）</td><td style="color:#2563eb">12.5 m</td><td class="be" style="color:#c0392b;font-weight:700">≥ 2.0 m</td><td>≤25.25m/60t 模块车</td><td style="text-align:left;"><a class="src" href="https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9" target="_blank" rel="noopener">forskrift FOR-2009-01-20-78</a> §9(c)(4)</td></tr>
+        <tr id="def-inner53"><td style="text-align:left;font-weight:700;">🇪🇺 欧盟基准 / 🇧🇪 比利时</td><td>360° 满圆</td><td>稳态 · 转到底（最不利工况）</td><td style="color:#2563eb">12.5 m</td><td class="wr" style="color:#c0392b;font-weight:700">≥ 5.3 m</td><td>标准铰接车</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a> + <a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230" target="_blank" rel="noopener">Reg 1230/2012</a></td></tr>
+        <tr><td style="text-align:left;font-weight:700;">🇩🇰 丹麦</td><td>360° 满圆</td><td>稳态 · 转到底（最不利工况）</td><td style="color:#2563eb">12.5 m</td><td class="wr" style="color:#c0392b;font-weight:700">≥ 5.3 m</td><td>标准车（"En bil eller et vogntog"）</td><td style="text-align:left;"><a class="src" href="https://www.lovtidende.dk/api/pdf/253937" target="_blank" rel="noopener">BEK 1447/2025</a> §5（丹麦"车辆最大宽长高重轴荷规定"，逐字写明外径12.50/内径5.30m，与欧盟基准相同数值——原先误查了模块车试验法规BEK 1491/2025，那份确实没有转弯条款，但§5的通用规定才是正确来源）</td></tr>
+        <tr><td style="text-align:left;font-weight:700;">🇫🇮 芬兰</td><td class="wr" style="font-weight:700;">120° 定角（非圆）</td><td class="wr">特定转角瞬态（更接近真实路口转弯）</td><td style="color:#2563eb">12.5 m</td><td class="wr" style="color:#c0392b;font-weight:700">S≤0.8m 且≥4.0m（S更小时下限3.70m）</td><td>所有 HCT 组合</td><td style="text-align:left;"><a class="src" href="https://www.finlex.fi/fi/laki/ajantasa/2018/20180729" target="_blank" rel="noopener">Tieliikennelaki 729/2018</a> §132+附件9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="note" data-i18n="asumnote1"><strong>怎么读这张表：</strong>瑞典/挪威/欧盟基准/丹麦四者物理假设完全相同（稳态·360°满圆），只是把及格线设在不同位置——同一个圆，换个数字。芬兰是例外：它换了整套测试方法，不是"同一个圆换数字"，所以芬兰的数字不能直接拿来跟"圆"类国家比较。<strong style="color:#0d7d74;">丹麦已核实（BEK 1447/2025 §5 逐字写明12.50/5.30m）——不再是假设。</strong></p>
+    <p class="note" style="margin-top:10px;color:var(--muted);" data-i18n="pInner_note1">这张表里的内圆数值，正是上面 Lₑ/L₂ 两节"实时反解"表格里用的同一组常数——也是下面 Rᵢ 一节判定"能不能拐过去"的及格线。</p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #a16207;">
+    <h2 data-i18n="pRi_h2"><span style="color:#a16207">Rᵢ</span> · 挂车稳态半径（结果）<span class="tag eng">⚪ 计算结果</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pRi_note0">Rᵢ 不是任何一国直接写死的常数——它是由 R、Lₑ、L₂ 三个参数算出来的<strong>结果</strong>。真正逐国不同的是它要对比的"及格线"，也就是上面单独一节的<a href="#def-inner" style="color:#c0392b;font-weight:700;text-decoration:none;border-bottom:1.5px dotted currentColor;">内圆阈值</a>。当前 Rᵢ：<b style="color:#a16207;font-weight:800" data-def="ri" id="s_riShow">–</b>。</p>
+    <table>
+      <thead><tr data-i18n="pRi_thead"><th>国家/市场 Country</th><th style="color:#c0392b">内圆阈值</th><th>当前 Rᵢ 是否达标（实时）</th></tr></thead>
+      <tbody data-i18n="pRi_tbody">
+        <tr><td>🇪🇺 欧盟基准 / 🇧🇪 比利时 / 🇩🇰 丹麦</td><td style="color:#c0392b;font-weight:700">≥ 5.3 m</td><td id="s_ri_ok_eu">–</td></tr>
+        <tr><td>🇸🇪 瑞典 / 🇳🇴 挪威</td><td style="color:#c0392b;font-weight:700">≥ 2.0 m</td><td id="s_ri_ok_sn">–</td></tr>
+        <tr><td>🇫🇮 芬兰</td><td colspan="2" style="text-align:left;color:var(--muted);">不适用此比较——芬兰用 120° 定角+尾摆测试，Rᵢ 这个稳态量本身不是芬兰的判据（见内圆阈值一节）</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="pRi_note1">每个国家的具体阈值数字、测试方法与法规来源，见上方独立的<strong>"内圆 · 及格线阈值"</strong>一节——这里只显示当前参数下的实时通过情况。</p>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="ri" data-i18n="pRi_jump" style="color:#a16207;font-weight:700;cursor:pointer;">↑ 跳到 Rᵢ 最早出现的地方（计算公式卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #db2777;">
+    <h2 data-i18n="pOhF_h2"><span style="color:#db2777">前悬</span>（车头最前点→第一轴）<span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pOhF_note">前悬没有单独的固定米数上限——96/53/EC 没有给货车前悬本身设一条数字线。客车/大客车有专门的前摆限制（≤0.6 m），但货车的前悬实际上是被<strong>转弯通道圆</strong>（R=12.5 m 外径）和轴距布置间接约束的：前悬越长，前轴到车头的这一段就越靠外，越容易在转弯时扫出通道圆之外。</p>
+    <table>
+      <thead><tr data-i18n="pOhF_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pOhF_tbody">
+        <tr><td>货车前悬 Goods vehicle front overhang</td><td class="wr">未见独立数值上限（受通道圆间接约束）</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a></td></tr>
+        <tr><td>客车/大客车前摆 Bus/coach front swing</td><td style="font-weight:700">≤ 0.6 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="overhangF" data-i18n="pOhF_jump" style="color:#db2777;font-weight:700;cursor:pointer;">↑ 跳到前悬最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #0891b2;">
+    <h2 data-i18n="pOhR_h2"><span style="color:#0891b2">后悬</span>（末轴→挂车尾部）<span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pOhR_note">后悬（末轴到车尾的这一段）不是固定米数，而是一条<strong>比例公式</strong>：不得超过轴距的 60%。这与销轴距 L₂/牵引销→车尾（≤12.00 m）是三条不同的约束，同一辆车必须同时满足全部。</p>
+    <table>
+      <thead><tr data-i18n="pOhR_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pOhR_tbody">
+        <tr><td>后悬 Rear overhang</td><td style="font-weight:700">≈ ≤ 60% 轴距 · ≈ ≤ 60% of wheelbase</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="overhangR" data-i18n="pOhR_jump" style="color:#0891b2;font-weight:700;cursor:pointer;">↑ 跳到后悬最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #7c3aed;">
+    <h2 data-i18n="p204_h2"><span style="color:#7c3aed">牵引销→前端半径</span>（鞍座→挂车前端）<span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="p204_note">这是 Reg 1230/2012 直接写死的常数之一，也是 L₂ 一节"视为合规"公式（√((12.5−2.04)²−(5.3+W/2)²) ≈ 8.135 m）里的输入项。它约束的是<strong>鞍座到半挂车前端</strong>这一段——与销轴距 L₂（鞍座→挂车轴）是不同的量，L₂ 更长不代表这一段也更长。</p>
+    <table>
+      <thead><tr data-i18n="p204_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="p204_tbody">
+        <tr><td>牵引销→前端半径 Kingpin→front radius</td><td style="color:#7c3aed;font-weight:700">≤ 2.04 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230" target="_blank" rel="noopener">Reg 1230/2012</a></td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="p204_note2">这条常数与 L₂ 深度剖析一节中"视为合规"捷径公式共用同一组数字——见上方 L₂ 一节。</p>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="204" data-i18n="p204_jump" style="color:#7c3aed;font-weight:700;cursor:pointer;">↑ 跳到牵引销→前端半径最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #4338ca;">
+    <h2 data-i18n="pKtr_h2"><span style="color:#4338ca">牵引销→车尾</span>（鞍座→挂车尾部）<span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pKtr_note">Reg 1230/2012 把"鞍座到挂车尾部"这一整段直接限定在 ≤12.00 m。这条约束独立于销轴距 L₂（鞍座→挂车轴）：即使 L₂ 很短（轴组靠前装），只要货厢做得够长，仍可能撞到这条 12.00 m 的上限——两者要分别核对。</p>
+    <table>
+      <thead><tr data-i18n="pKtr_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pKtr_tbody">
+        <tr><td>牵引销→车尾 Kingpin to rear of trailer</td><td style="color:#4338ca;font-weight:700">≤ 12.00 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230" target="_blank" rel="noopener">Reg 1230/2012</a></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="ktr" data-i18n="pKtr_jump" style="color:#4338ca;font-weight:700;cursor:pointer;">↑ 跳到牵引销→车尾最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #a21caf;">
+    <h2 data-i18n="pW_h2"><span style="color:#a21caf">车宽</span><span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pW_note">车宽是横向（左右）尺寸——本页的侧视图是纵向（前后）视角，画不出横向宽度，所以车宽没有对应的侧视图标注线，这里只列数值。</p>
+    <table>
+      <thead><tr data-i18n="pW_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pW_tbody">
+        <tr><td>一般货车 Standard vehicle</td><td style="color:#a21caf;font-weight:700">≤ 2.55 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a> Annex I §1</td></tr>
+        <tr><td>温控/冷藏车厢 Temperature-controlled body</td><td style="color:#a21caf;font-weight:700">≤ 2.60 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a> Annex I §1</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="w" data-i18n="pW_jump" style="color:#a21caf;font-weight:700;cursor:pointer;">↑ 跳到 W 最早出现的地方（L₂ 深度剖析卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #65a30d;">
+    <h2 data-i18n="pH_h2"><span style="color:#65a30d">车高</span><span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="pH_note">车高是欧盟统一的固定上限，各国未见独立放宽版本。</p>
+    <table>
+      <thead><tr data-i18n="pH_thead"><th>项目 Item</th><th>限值 Limit</th><th>来源 Source</th></tr></thead>
+      <tbody data-i18n="pH_tbody">
+        <tr><td>车高 Overall height</td><td style="color:#65a30d;font-weight:700">≤ 4.00 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC</a> Annex I §1</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="height" data-i18n="pH_jump" style="color:#65a30d;font-weight:700;cursor:pointer;">↑ 跳到车高最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #9f1239;">
+    <h2 data-i18n="c11h2a"><span style="color:#9f1239">① 车长</span><span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="c11a_note0">除转弯通道圆外，欧盟 96/53/EC 还独立限定车长——与转弯合规是两套不同判据，需分别校核。</p>
+    <table>
+      <thead><tr data-i18n="c11at">
+        <th>车型 Configuration</th><th>限值 Limit</th></tr></thead>
+      <tbody data-i18n="c11ab">
+        <tr><td>牵引车（单车）Rigid tractor</td><td>12.00 m</td></tr>
+        <tr id="def-len-art"><td>牵引车 + 半挂车 Articulated (tractor+semitrailer)</td><td class="be">16.50 m</td></tr>
+        <tr><td>牵引车 + 全挂车 Truck + full trailer</td><td>18.75 m</td></tr>
+        <tr><td>牵引销→车尾 Kingpin to rear of trailer（约束半挂货厢长度）</td><td class="wr">≤ 12.00 m</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="c11anote">来源：<a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC Annex I §1</a>。铰接车长度 16.50 m 是"车头保险杠→挂车尾部"总长，与转弯用的 Lₑ/L₂（轴距）是两套不同的量——同一辆车必须同时满足两者。<br>若列车总长超出基准 16.50 m 上限，需依赖欧盟对<strong>运输 45ft/40ft 集装箱铰接列车</strong>的专项延长条款（96/53/EC 附件I 及后续修订允许集装箱运输列车加长，具体以成员国过境许可为准）——该条款并非普通铰接车豁免，跨境前需核实沿线国家是否承认。实际车型须按上表限值逐项核对。</p>
+    <table style="margin-top:10px;">
+      <thead><tr data-i18n="c11a_ctable_thead"><th>国家 Country</th><th>最大车长 Max length</th></tr></thead>
+      <tbody data-i18n="c11a_ctable_tbody">
+        <tr><td>🇸🇪 瑞典 Sweden</td><td>25.25 m（试点 34.5）</td></tr>
+        <tr><td>🇫🇮 芬兰 Finland</td><td><strong>34.5 m</strong></td></tr>
+        <tr><td>🇳🇴 挪威 Norway</td><td>19.5 · 模块 25.25 m</td></tr>
+        <tr><td>🇩🇰 丹麦 Denmark</td><td>模块 25.25 · EMS2 34 m</td></tr>
+        <tr><td>🇧🇪 比利时 Belgium</td><td>18.75 · LZV 25.25 m</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><span class="v" data-def="len" data-i18n="c11a_jump" style="color:#9f1239;font-weight:700;cursor:pointer;">↑ 跳到车长最早出现的地方（侧视图卡片）</span></p>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #713f12;">
+    <h2 data-i18n="c11h2b"><span style="color:#713f12">② 总重</span><span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="c11b_note0">除转弯通道圆外，欧盟 96/53/EC 还独立限定总重（GVW，按轴数分档）——与转弯合规是两套不同判据，需分别校核。</p>
+    <table>
+      <thead><tr data-i18n="c11bt"><th>车辆类型 Type</th><th>轴数 Axles</th><th>限值 Limit</th></tr></thead>
+      <tbody data-i18n="c11bb">
+        <tr><td>2 轴刚性车 Rigid, 2-axle</td><td>2</td><td>18 t</td></tr>
+        <tr><td>3 轴刚性车 Rigid, 3-axle（牵引车单车 tractor unit）</td><td>3</td><td>25（空气悬架 26）t</td></tr>
+        <tr id="def-gvw44"><td>牵引车(2轴)+半挂(3轴) 5 轴铰接车 <span class="tag law">🔵</span></td><td class="be">5</td><td class="be">44 t</td></tr>
+        <tr><td>牵引车(3轴)+半挂(2轴) 5 轴铰接车</td><td>5</td><td>40 t（部分成员国 44 t）</td></tr>
+        <tr><td>牵引车(3轴)+半挂(3轴) 6 轴铰接车</td><td>6</td><td>44 t</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="c11bnote">6×4 典型配置：牵引车 3 轴（1 转向 + 2 驱动）+ 半挂车 3 轴 → <strong>标准欧盟 44 t 总重上限</strong>（一般国际运输）；比利时国际运输同为 40/44 t 口径，需按下表核对。设计总重超出 44 t 的列车，仅在承认北欧 HCT（高运力）通行许可的市场（瑞典/芬兰）下可用满载，普通欧盟成员国境内运输需降载至 ≤44 t。来源：<a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC Annex I §2-3</a>。实际车型须按上表限值逐项核对。</p>
+    <table style="margin-top:10px;">
+      <thead><tr data-i18n="c11b_ctable_thead"><th>国家 Country</th><th>最大总重 Max weight</th></tr></thead>
+      <tbody data-i18n="c11b_ctable_tbody">
+        <tr><td>🇸🇪 瑞典 Sweden</td><td>64 t（BK4 74）</td></tr>
+        <tr><td>🇫🇮 芬兰 Finland</td><td><strong>76 t</strong></td></tr>
+        <tr><td>🇳🇴 挪威 Norway</td><td>60 t（试点 74）</td></tr>
+        <tr><td>🇩🇰 丹麦 Denmark</td><td>60 t</td></tr>
+        <tr><td>🇧🇪 比利时 Belgium</td><td>44 t 国内 / 40 t 国际</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:4px solid #1e293b;">
+    <h2 data-i18n="c11h2c"><span style="color:#1e293b">③ 单轴 / 轴组限重</span><span class="tag law">🔵 法规值</span></h2>
+    <p class="note" style="margin-top:0" data-i18n="c11c_note0">除转弯通道圆外，欧盟 96/53/EC 还独立限定单轴/轴组限重（约束载荷分布）——与转弯合规是两套不同判据，需分别校核。</p>
+    <table>
+      <thead><tr data-i18n="c11ct"><th>轴型 Axle type</th><th>限值 Limit</th></tr></thead>
+      <tbody data-i18n="c11cb">
+        <tr><td>非driven单轴 Single non-driven axle</td><td>10 t</td></tr>
+        <tr id="def-driveaxle"><td>驱动轴 Driven (motor) axle <span class="tag law">🔵</span></td><td class="wr">11.5 t</td></tr>
+        <tr><td>双联轴组，间距 &lt;1.0 m Tandem, spacing &lt;1.0m</td><td>11.5 t</td></tr>
+        <tr><td>双联轴组，1.0≤间距&lt;1.3 m</td><td>16 t</td></tr>
+        <tr id="def-tandem135"><td>双联轴组，1.3≤间距&lt;1.8 m<span class="tag law">🔵</span></td><td class="be">18 t（驱动轴组 19 t）</td></tr>
+        <tr><td>三联轴组，间距≤1.3 m Tri-axle group ≤1.3m</td><td>21 t</td></tr>
+        <tr><td>三联轴组，间距&gt;1.3 m</td><td>24 t</td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="c11cnote">驱动桥间距 <b class="v" data-def="s">s=1.35 m</b>（同一常数用在转弯几何的桥间距行）落在"1.3–1.8 m"档 → 双联驱动轴组限重 <b>19 t</b>；前轴（转向、非驱动）单轴限重 <b>10 t</b>。<strong>总重校核需同时满足：Σ轴组限重 ≥ 各轴组实际载重，且总重 ≤ 44 t</strong>——单轴合格不代表总重合格，反之亦然。轴组载重贴近限值时建议留出工程余量，避免载荷分布偏移或标定误差导致超限。来源：<a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC Annex I §3</a>。实际车型须按上表限值逐项核对。</p>
+
+    <div class="note" style="margin-top:12px;background:#f4f7fb;border:1px solid var(--line);border-radius:10px;padding:12px 14px;">
+      <span data-i18n="c11summary"><strong style="color:#0e1726;">三条判据相互独立：</strong>转弯通道圆（本页主体，约束 Lₑ/L₂ 的几何组合）、车长（约束车头到车尾的直线距离）、总重与单轴限重（约束载荷分布）分别来自 96/53/EC 的不同条款，需分别校核，任一项不满足即不合规——满足转弯几何不能替代长度/重量合规判定。</span>
+    </div>
+  </div>
+
+  <div class="card" id="def-sources" style="margin-top:18px;border-left:4px solid #1d4ed8;">
+    <h2 data-i18n="c8h2">法规来源 · Sources<span class="tag law">🔵 官方原文</span></h2>
+    <table>
+      <thead><tr data-i18n="c8thead"><th>数值 Figure</th><th>来源 Source（新标签打开）</th></tr></thead>
+      <tbody data-i18n="c8tbody">
+        <tr><td>外圆 12.5 / 内圆 5.3 m · 车长 12/16.5/18.75 · 车宽 2.55/2.60 · 车高 4.0 · 前后悬</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">Directive 96/53/EC</a>（Annex I）</td></tr>
+        <tr><td>牵引销→前端半径 2.04 m · 牵引销→车尾 12.0 m · 半挂"视为合规"销轴距 8.135 m</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230" target="_blank" rel="noopener">Reg (EU) 1230/2012</a></td></tr>
+        <tr><td>铰接车长 16.5 m · 总重 40/44 t（5/6轴）· 单轴 10/11.5 t · 双联/三联轴组限重</td><td style="text-align:left;"><a class="src" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053" target="_blank" rel="noopener">96/53/EC Annex I §1-3</a></td></tr>
+        <tr><td>芬兰 内圆 2.0 · 120°测试 4.0 · 尾摆 ≤ 0.8 m · 34.5 m / 76 t</td><td style="text-align:left;"><a class="src" href="https://www.finlex.fi/fi/laki/ajantasa/2018/20180729" target="_blank" rel="noopener">Tieliikennelaki 729/2018</a> §132/§140 · 旧 <a class="src" href="https://www.finlex.fi/fi/laki/ajantasa/1992/19921257" target="_blank" rel="noopener">Asetus 1257/1992</a></td></tr>
+        <tr><td>🇸🇪 瑞典 转弯 12.5/2.0 m（&gt;24m组合）· BK4 74 t · 25.25 m</td><td style="text-align:left;"><a class="src" href="https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf" target="_blank" rel="noopener">TSFS 2012:126</a> §2 · <a class="src" href="https://www.transportstyrelsen.se/" target="_blank" rel="noopener">Transportstyrelsen</a></td></tr>
+        <tr><td>🇫🇮 芬兰 120°定角 外12.5/内≥4.0(下限3.70)·侧移≤0.8m</td><td style="text-align:left;"><a class="src" href="https://www.traficom.fi/files/media/file/HCT%20perustelumuistio_FI.pdf" target="_blank" rel="noopener">Traficom TRAFICOM/304841/03.04.03.00/2019</a> · <a class="src" href="https://www.traficom.fi/" target="_blank" rel="noopener">Traficom</a></td></tr>
+        <tr><td>🇳🇴 挪威 转弯 12.5/2.0 m（modulvogntog）· 60 t · 试点 74 t</td><td style="text-align:left;"><a class="src" href="https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9" target="_blank" rel="noopener">forskrift FOR-2009-01-20-78 §9</a> · <a class="src" href="https://www.vegvesen.no/" target="_blank" rel="noopener">Statens vegvesen</a></td></tr>
+        <tr><td>🇩🇰 丹麦 转弯 外12.5/内5.3m（标准车，已核实）· EMS2 34 m · 60 t</td><td style="text-align:left;"><a class="src" href="https://www.lovtidende.dk/api/pdf/253937" target="_blank" rel="noopener">BEK 1447/2025</a> §5 · <a class="src" href="https://www.fstyr.dk/" target="_blank" rel="noopener">Færdselsstyrelsen</a></td></tr>
+        <tr><td>🇧🇪 比利时 LZV 25.25 m · 44/40 t</td><td style="text-align:left;"><a class="src" href="https://mobilit.belgium.be/" target="_blank" rel="noopener">FOD Mobiliteit</a></td></tr>
+      </tbody>
+    </table>
+    <p class="note" data-i18n="c8note">链接指向官方立法/主管机关原文，新标签页打开。本运行环境无法直接抓取 EUR-Lex / Finlex（403），链接未预取；正式合规以打开后的原文为准。</p>
+  </div>
+  </div>
+
+
+</div>
+
+<script>
+window.LANG="zh";
+window.CANVAS_TXT={"zh": {"enter": "直线行驶 → 入弯", "front": "前轴 Front axle", "trailer": "挂车轴 Trailer axles", "kp": "⊕ 鞍座·牵引销", "offset": "偏移 ", "chain": "前轴→挂车轴", "okBoth": "✓ 欧盟+芬兰", "okFi": "✓ 仅芬兰", "fail": "✗ 不满足", "overLimit": "—（Σ超限）", "limit": "上限", "pause": "⏸ 暂停", "play": "▶ 播放", "legend": [["Lₑ 有效轴距 Effective wheelbase", "#0d7d74"], ["L₂ 销轴距 Kingpin → trailer axles", "#6d5bd0"], ["⊕  鞍座＝驱动桥中心 Fifth wheel", "#8a4e07"]]}, "en": {"enter": "Straight line → entering the turn", "front": "Front axle", "trailer": "Trailer axles", "kp": "⊕ Fifth wheel · kingpin", "offset": "Offset ", "chain": "front axle→trailer axles", "okBoth": "✓ EU + Finland", "okFi": "✓ Finland only", "fail": "✗ Fails", "overLimit": "— (Σ over limit)", "limit": "Limit", "pause": "⏸ Pause", "play": "▶ Play", "legend": [["Lₑ Effective wheelbase", "#0d7d74"], ["L₂ Kingpin → trailer axles", "#6d5bd0"], ["⊕  Fifth wheel = tandem centre", "#8a4e07"]]}};
+function CT(){return window.CANVAS_TXT[window.LANG]||window.CANVAS_TXT.zh;}
+</script>
+
+<script>
+(function(){
+  var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+  var W=640,H=515, dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height='auto'; ctx.scale(dpr,dpr);
+  var R=165,Cx=360,Cy=318,pxM=R/12.5,Wm=2.5,FOfix=1.2,rearOH=1.0;
+  var LE=5.33,SPRdraw=1.35,E=0,L2=7.50;  // 鞍座=驱动桥中心 → e恒为0
+  var segs=[{k:0,len:150},{k:1/R,len:R*1.95},{k:0,len:110}],S=0; segs.forEach(function(s){S+=s.len;});
+  var st,P0,Pd,Pk,P2,ft,tt,playing=true,raf=null;
+  function Le(){return LE;}
+  function init(){ st={x:210,y:Cy-R,psi:0,seg:0,rem:segs[0].len,s:0};
+    P0={x:st.x,y:st.y}; Pd={x:P0.x-Le()*pxM,y:P0.y}; Pk={x:Pd.x+E*pxM,y:Pd.y}; P2={x:Pk.x-L2*pxM,y:Pk.y}; ft=[];tt=[]; }
+  function u(dx,dy){var d=Math.hypot(dx,dy)||1;return{x:dx/d,y:dy/d};}
+  function step(ds){
+    st.s+=ds;var rem=ds;
+    while(rem>0&&st.seg<segs.length){var t=Math.min(rem,st.rem);
+      st.x+=t*Math.cos(st.psi);st.y+=t*Math.sin(st.psi);st.psi+=t*segs[st.seg].k;
+      st.rem-=t;rem-=t;if(st.rem<=1e-6){st.seg++;if(st.seg<segs.length)st.rem=segs[st.seg].len;}}
+    P0={x:st.x,y:st.y};
+    var ud=u(P0.x-Pd.x,P0.y-Pd.y);Pd={x:P0.x-Le()*pxM*ud.x,y:P0.y-Le()*pxM*ud.y};
+    var h=u(P0.x-Pd.x,P0.y-Pd.y); Pk={x:Pd.x+E*pxM*h.x,y:Pd.y+E*pxM*h.y};
+    var u2=u(Pk.x-P2.x,Pk.y-P2.y);P2={x:Pk.x-L2*pxM*u2.x,y:Pk.y-L2*pxM*u2.y};
+    ft.push({x:P0.x,y:P0.y}); tt.push({x:P2.x,y:P2.y});
+    return {h:h,dr:u(Pk.x-P2.x,Pk.y-P2.y)};
+  }
+  function circ(cx,cy,r,c,d,w){if(!(r>0))return;ctx.save();ctx.strokeStyle=c;ctx.lineWidth=w||1;ctx.setLineDash(d||[]);ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();ctx.restore();}
+  function poly(p,c,w){if(p.length<2)return;ctx.save();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0].x,p[0].y);for(var i=1;i<p.length;i++)ctx.lineTo(p[i].x,p[i].y);ctx.stroke();ctx.restore();}
+  function dot(p,r,c){ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fillStyle=c;ctx.fill();}
+  function band(A,B,nn,w,fill){ctx.beginPath();ctx.moveTo(A.x+w*nn.x,A.y+w*nn.y);ctx.lineTo(A.x-w*nn.x,A.y-w*nn.y);ctx.lineTo(B.x-w*nn.x,B.y-w*nn.y);ctx.lineTo(B.x+w*nn.x,B.y+w*nn.y);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='#2b3a54';ctx.stroke();}
+  function arrow(a,b,c){ctx.save();ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=1.4;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    [[a,b],[b,a]].forEach(function(pr){var p=pr[0],q=pr[1],an=Math.atan2(p.y-q.y,p.x-q.x);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-7*Math.cos(an-0.4),p.y-7*Math.sin(an-0.4));ctx.lineTo(p.x-7*Math.cos(an+0.4),p.y-7*Math.sin(an+0.4));ctx.closePath();ctx.fill();});ctx.restore();}
+  function toks(arr,x,y,f){ctx.save();ctx.font=f;ctx.textBaseline='alphabetic';var cx=x;for(var i=0;i<arr.length;i++){ctx.fillStyle=arr[i][1]||'#0e1726';ctx.fillText(arr[i][0],cx,y);cx+=ctx.measureText(arr[i][0]).width;}ctx.restore();}
+  function draw(g){
+    ctx.clearRect(0,0,W,H);
+    circ(Cx,Cy,R,'#2563eb',[6,5],1.3);
+    var inside=R*R-(Le()*pxM)*(Le()*pxM)-(L2*pxM)*(L2*pxM)+(E*pxM)*(E*pxM);
+    circ(Cx,Cy,inside>0?Math.sqrt(inside):0,'#a16207',[6,5],1.3);
+    circ(Cx,Cy,5.3*pxM,'#c0392b',[2,4],1); circ(Cx,Cy,2.0*pxM,'#c0392b',[5,3],1);
+    dot({x:Cx,y:Cy},3,'#94a3b8');
+    poly(ft,'#2563eb',2.5); poly(tt,'#a16207',2.5);
+    circ(Pk.x,Pk.y,2.04*pxM,'#7c3aed',[3,3],1.2);   // 2.04 m 半挂前端半径（绕鞍座）
+    var h=g.h, dr=g.dr, w=Wm*pxM/2, nt={x:-h.y,y:h.x}, nr={x:-dr.y,y:dr.x};
+    var front={x:P0.x+FOfix*pxM*h.x,y:P0.y+FOfix*pxM*h.y};
+    var tail={x:P2.x-rearOH*pxM*dr.x,y:P2.y-rearOH*pxM*dr.y};
+    band(Pk,tail,nr,w,'#475569');            // trailer
+    band(front,Pd,nt,w*0.92,'#334155');       // tractor
+    // fifth wheel + wheels: front, tandem(2 around Pd), trailer
+    var half=(SPRdraw/2)*pxM;
+    dot(P0,4.5,'#0d1626');
+    dot({x:Pd.x+half*h.x,y:Pd.y+half*h.y},4.5,'#0d1626');
+    dot({x:Pd.x-half*h.x,y:Pd.y-half*h.y},4.5,'#0d1626');
+    dot(P2,4.5,'#0d1626');
+    // 鞍座/牵引销 kingpin: bold unmistakable marker — thick ring + crosshair
+    ctx.save();ctx.setLineDash([]);
+    ctx.strokeStyle='#d97706';ctx.lineWidth=3.5;
+    ctx.beginPath();ctx.arc(Pk.x,Pk.y,8,0,7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(Pk.x-13,Pk.y);ctx.lineTo(Pk.x+13,Pk.y);
+    ctx.moveTo(Pk.x,Pk.y-13);ctx.lineTo(Pk.x,Pk.y+13);ctx.lineWidth=2.5;ctx.stroke();
+    ctx.fillStyle='#8a4e07';ctx.beginPath();ctx.arc(Pk.x,Pk.y,3.5,0,7);ctx.fill();
+    ctx.restore();
+    // 低风阻前脸：前端为圆弧玻璃造型
+    ctx.save();ctx.translate(front.x,front.y);ctx.rotate(Math.atan2(h.y,h.x));
+    ctx.beginPath();ctx.moveTo(-9,-w*0.92+2);ctx.quadraticCurveTo(3,-w*0.55,3,0);ctx.quadraticCurveTo(3,w*0.55,-9,w*0.92-2);ctx.closePath();
+    ctx.fillStyle='#a9c7e6';ctx.fill();ctx.restore();
+    ctx.fillStyle='#3a4658';ctx.font='15px sans-serif';ctx.fillText(CT().enter,18,24);
+
+    // ---- dimension lines + bilingual labels (offset off the vehicle body) ----
+    // outward normal: perpendicular to tractor heading, pointing AWAY from turn center
+    var nOut={x:-h.y,y:h.x};
+    if(nOut.x*(P0.x-Cx)+nOut.y*(P0.y-Cy)<0){nOut.x=-nOut.x;nOut.y=-nOut.y;}
+    function off(p,d){return {x:p.x+d*nOut.x,y:p.y+d*nOut.y};}
+    function pill(x,y,l1,l2,col){ctx.save();ctx.font='bold 13px sans-serif';var w1=ctx.measureText(l1).width;
+      ctx.font='13px sans-serif';var w2=l2?ctx.measureText(l2).width:0;
+      var bw=Math.max(w1,w2)+10,bh=l2?28:17;
+      ctx.fillStyle='rgba(255,255,255,.95)';ctx.strokeStyle=col;ctx.lineWidth=1;
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x-bw/2,y-bh/2,bw,bh,4);ctx.fill();ctx.stroke();}
+      else{ctx.fillRect(x-bw/2,y-bh/2,bw,bh);ctx.strokeRect(x-bw/2,y-bh/2,bw,bh);}
+      ctx.fillStyle=col;ctx.textAlign='center';
+      ctx.font='bold 13px sans-serif';ctx.fillText(l1,x,l2?y-2:y+4);
+      if(l2){ctx.font='13px sans-serif';ctx.fillText(l2,x,y+10);}
+      ctx.restore();}
+    // dimension line with end ticks, at perpendicular offset d from the axle line
+    function dim(a,b,d,l1,l2,col){var a2=off(a,d),b2=off(b,d);ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(a2.x,a2.y);ctx.lineTo(b2.x,b2.y);ctx.stroke();          // dimension line
+      ctx.setLineDash([2,3]);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(a2.x,a2.y);ctx.moveTo(b.x,b.y);ctx.lineTo(b2.x,b2.y);ctx.stroke(); // extension ticks to the exact points
+      ctx.restore();
+      // label rotated along the dimension line (kept upright by flipping past ±90°)
+      var ang=Math.atan2(b2.y-a2.y,b2.x-a2.x);
+      if(ang>Math.PI/2)ang-=Math.PI; if(ang<-Math.PI/2)ang+=Math.PI;
+      ctx.save();ctx.translate((a2.x+b2.x)/2,(a2.y+b2.y)/2);ctx.rotate(ang);
+      pill(0,0,l1,l2,col);ctx.restore();}
+    // compact value pills on stacked tiers (full bilingual names live in the fixed legend)
+    dim(P0,Pd,w+16,'Lₑ = '+Le().toFixed(2)+' m',null,'#0d7d74');
+    dim(Pk,P2,w+44,'L₂ = '+L2.toFixed(2)+' m',null,'#6d5bd0');
+    // fixed legend, bottom-right corner (outside the circles and the vehicle's path)
+    ctx.save();ctx.textAlign='left';ctx.font='13px sans-serif';
+    CT().legend.forEach(function(r,i){
+       ctx.fillStyle=r[1];ctx.fillText(r[0],462,464+i*15);});
+    ctx.restore();
+    // point labels on the inner side of the body
+    var wIn=-(w+16);
+    var pP0=off(P0,wIn), pP2=off(P2,wIn), pPk=off(Pk,wIn-52);
+    pill(pP0.x,pP0.y,CT().front,null,'#2563eb');
+    pill(pP2.x,pP2.y,CT().trailer,null,'#a16207');
+    // 鞍座 callout: leader line from the amber dot to a second-tier pill
+    ctx.save();ctx.strokeStyle='#d97706';ctx.lineWidth=2.5;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(Pk.x,Pk.y);ctx.lineTo(pPk.x,pPk.y);ctx.stroke();ctx.restore();
+    pill(pPk.x,pPk.y+10,CT().kp,null,'#8a4e07');
+
+    // ---- radii + off-tracking annotation (left side) ----
+    var RiPx=inside>0?Math.sqrt(inside):0, Rim=RiPx/pxM, le=Le();
+    var pR={x:Cx-R,y:Cy}, pRi={x:Cx-RiPx,y:Cy};
+    ctx.save();ctx.setLineDash([]);
+    ctx.strokeStyle='#2563eb';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(Cx,Cy);ctx.lineTo(pR.x,pR.y);ctx.stroke();
+    ctx.strokeStyle='#a16207';ctx.beginPath();ctx.moveTo(Cx,Cy);ctx.lineTo(pRi.x,pRi.y);ctx.stroke();ctx.restore();
+    // offset arrow + label: ABOVE the axis, on its own row, centered over the gap
+    if(RiPx>0){arrow({x:pRi.x,y:Cy-14},{x:pR.x,y:Cy-14},'#475569');
+      ctx.font='13px sans-serif';ctx.fillStyle='#475569';ctx.textAlign='center';
+      ctx.fillText(CT().offset+((R-RiPx)/pxM).toFixed(2)+' m',(pR.x+pRi.x)/2,Cy-20);ctx.textAlign='left';}
+    // R (outer) and Rᵢ (inner) labels: BELOW the axis, on two separate rows
+    ctx.font='13px sans-serif';
+    function bgText(txt,x,y,col){var tw=ctx.measureText(txt).width;
+      ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(x-2,y-10,tw+4,13);
+      ctx.fillStyle=col;ctx.fillText(txt,x,y);}
+    bgText('R = 12.5 m',pR.x+3,Cy+16,'#2563eb');
+    bgText('Rᵢ = '+Rim.toFixed(2)+' m',pRi.x+3,Cy+32,'#a16207');
+
+    // ---- live substituted values (bottom-left; the abstract formula lives once in the Formula card above) ----
+    ctx.save();ctx.fillStyle='rgba(255,255,255,.92)';ctx.strokeStyle='#d7deea';ctx.lineWidth=1;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(10,443,438,34,8);ctx.fill();ctx.stroke();}else{ctx.fillRect(10,443,438,34);ctx.strokeRect(10,443,438,34);}
+    ctx.restore();
+    toks([['Rᵢ',' #a16207'.trim()],[' = √( ',''],['156.25',' #2563eb'.trim()],[' − ',''],[(le*le).toFixed(2),' #0d7d74'.trim()],[' − ',''],[(L2*L2).toFixed(2),' #6d5bd0'.trim()],[' ) = ',''],[Rim.toFixed(2)+' m',' #a16207'.trim()]],20,465,'13px sans-serif');
+  }
+  function frame(){if(!playing)return;var g;for(var i=0;i<5;i++){if(st.s>=S){init();}g=step(1.1);}draw(g);raf=requestAnimationFrame(frame);}
+  function staticFull(){init();var g;while(st.s<S)g=step(1.4);draw(g);}
+  function upd(){
+    LE=+document.getElementById('wb').value;L2=+document.getElementById('kp').value;
+    var le=Le(), inside=12.5*12.5-le*le-L2*L2, Rrm=inside>0?Math.sqrt(inside):0, off=inside>0?12.5-Rrm:null;
+    var el=document.getElementById('cmp');
+    if(inside>0&&Rrm>=5.3){el.textContent=CT().okBoth;el.className='v ok';}
+    else if(inside>0&&Rrm>=2.0){el.textContent=CT().okFi;el.className='v ok';}
+    else{el.textContent=CT().fail;el.className='v bad';}
+    var Wt=2.55, dtc=Math.sqrt(Math.max(0,(12.5-2.04)*(12.5-2.04)-(5.3+Wt/2)*(5.3+Wt/2)));
+    var d=document.getElementById('dtc'), okd=L2<=dtc;
+    d.textContent='L₂ '+(okd?'≤':'>')+' '+dtc.toFixed(2)+' m '+(okd?'✓':'✗');
+    d.className='v '+(okd?'ok':'bad');
+    var kpEl=document.getElementById('kp'); kpEl.style.color=okd?'#6d5bd0':'#c0392b'; kpEl.style.borderColor=okd?'#6d5bd0':'#c0392b';
+    // ---- breakdown (expand-to-primitives) ----
+    function T(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+        T('s_l2',L2.toFixed(2)+' m'); T('s_l2b',L2.toFixed(2));
+    T('s_le',le.toFixed(3)+' m');
+    T('s_le2',(le*le).toFixed(2)); T('s_l22',(L2*L2).toFixed(2));
+    T('s_ri2',inside.toFixed(2));
+    T('s_ri2expr','156.25 − '+(le*le).toFixed(2)+' − '+(L2*L2).toFixed(2)+' = '+inside.toFixed(2));
+    T('s_ri',inside>0?Rrm.toFixed(2)+' m':CT().overLimit);
+    T('s_riShow',inside>0?Rrm.toFixed(2)+' m':CT().overLimit);
+    T('s_off',inside>0?off.toFixed(2)+' m':'>12.5 m');
+    T('s_cmp',el.textContent);
+    T('s_dtc',CT().limit+' 8.135 m · L₂='+L2.toFixed(2)+(okd?' ✓':' ✗'));
+    // ---- per-parameter deep-dive: live max-Lₑ / max-L₂ per country, holding the other side fixed ----
+    function maxGiven(fixedSq,c){var v=156.25-fixedSq-c*c;return v>0?Math.sqrt(v):null;}
+    var leMaxEU=maxGiven(L2*L2,5.3), leMaxSN=maxGiven(L2*L2,2.0);
+    var l2MaxEU=maxGiven(le*le,5.3), l2MaxSN=maxGiven(le*le,2.0);
+    function fmtMax(v){return v===null?CT().overLimit:v.toFixed(2)+' m';}
+    T('s_lemax_eu',fmtMax(leMaxEU)); T('s_lemax_sn',fmtMax(leMaxSN));
+    T('s_l2max_eu',fmtMax(l2MaxEU)); T('s_l2max_sn',fmtMax(l2MaxSN));
+    var leOkEU=leMaxEU!==null&&le<=leMaxEU, leOkSN=leMaxSN!==null&&le<=leMaxSN;
+    var l2OkEU=l2MaxEU!==null&&L2<=l2MaxEU, l2OkSN=l2MaxSN!==null&&L2<=l2MaxSN;
+    function mark(id,ok){var e=document.getElementById(id);if(!e)return;e.textContent=ok?'✓':'✗';e.className=ok?'be':'wr';}
+    mark('s_leok_eu',leOkEU); mark('s_leok_sn',leOkSN);
+    mark('s_l2ok_eu',l2OkEU); mark('s_l2ok_sn',l2OkSN);
+    mark('s_ri_ok_eu',inside>0&&Rrm>=5.3); mark('s_ri_ok_sn',inside>0&&Rrm>=2.0);
+    init();
+  }
+  function syncPair(numId,rangeId){
+    var n=document.getElementById(numId), r=document.getElementById(rangeId);
+    n.addEventListener('input',function(){ if(n.value!==''){ r.value=n.value; upd(); } });
+    r.addEventListener('input',function(){ n.value=r.value; upd(); });
+  }
+  syncPair('wb','wbR'); syncPair('kp','kpR');
+  var pb=document.getElementById('play'),rb=document.getElementById('reset');
+  pb.onclick=function(){playing=!playing;pb.textContent=playing?CT().pause:CT().play;if(playing)frame();};
+  rb.onclick=function(){init();if(!playing){playing=true;pb.textContent=CT().pause;}cancelAnimationFrame(raf);frame();};
+  window.__i18nRefresh=function(){upd();pb.textContent=playing?CT().pause:CT().play;};
+  upd();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){playing=false;pb.textContent=CT().play;staticFull();}else frame();
+})();
+
+// ---- make every section (card with a heading) collapsible ----
+document.querySelectorAll('.card').forEach(function(card){
+  var h2=null;
+  for(var i=0;i<card.children.length;i++){if(card.children[i].tagName==='H2'){h2=card.children[i];break;}}
+  if(!h2)return; // e.g. the kid card already uses its own <details>
+  var det=document.createElement('details');det.className='sec';det.open=true;
+  var sum=document.createElement('summary');
+  var rest=[];for(var j=0;j<card.children.length;j++){var el=card.children[j];if(el!==h2)rest.push(el);}
+  sum.appendChild(h2);det.appendChild(sum);
+  rest.forEach(function(el){det.appendChild(el);});
+  card.appendChild(det);
+});
+
+// ---- click any variable/number (.v) → scroll to its first appearance (definition anchor) & blink ----
+document.addEventListener('click',function(e){
+  var el=e.target.closest?e.target.closest('.v'):null;
+  if(!el||!el.dataset.def)return;
+  var t=document.getElementById('def-'+el.dataset.def);
+  if(!t)return;
+  // open any collapsed <details> ancestors of the target
+  var d=t.parentElement;while(d){if(d.tagName==='DETAILS')d.open=true;d=d.parentElement;}
+  t.scrollIntoView({behavior:'smooth',block:'center'});
+  t.classList.remove('defblink');void t.getBoundingClientRect();
+  setTimeout(function(){t.classList.add('defblink');},350);
+  setTimeout(function(){t.classList.remove('defblink');},1900);
+});
+
+// ---- page zoom control: scales all text, SVGs and the canvas together ----
+(function(){
+  var z=1, MIN=0.6, MAX=3, bar=document.createElement('div');
+  bar.style.cssText='position:fixed;top:10px;right:12px;z-index:99;display:flex;gap:6px;align-items:center;'+
+    'background:rgba(255,255,255,.92);border:1px solid #d7deea;border-radius:10px;padding:5px 8px;'+
+    'box-shadow:0 2px 10px rgba(14,23,38,.12);font-size:13px;user-select:none;';
+  bar.innerHTML='<button id="zOut" title="缩小 Zoom out" style="font:inherit;font-weight:800;width:28px;height:28px;border:1px solid #d7deea;border-radius:7px;background:#fff;cursor:pointer;">−</button>'+
+    '<span id="zPct" style="min-width:44px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;" title="点击复位 Reset">100%</span>'+
+    '<button id="zIn" title="放大 Zoom in" style="font:inherit;font-weight:800;width:28px;height:28px;border:1px solid #d7deea;border-radius:7px;background:#fff;cursor:pointer;">＋</button>';
+  document.body.appendChild(bar);
+  function apply(){document.body.style.zoom=z;document.getElementById('zPct').textContent=Math.round(z*100)+'%';}
+  function set(nz){z=Math.min(MAX,Math.max(MIN,Math.round(nz*10)/10));apply();}
+  document.getElementById('zIn').onclick=function(){set(z+0.1);};
+  document.getElementById('zOut').onclick=function(){set(z-0.1);};
+  document.getElementById('zPct').onclick=function(){set(1);};
+  // Ctrl/Cmd + wheel zooms the page in place (in addition to native browser zoom)
+  addEventListener('wheel',function(e){if(e.ctrlKey||e.metaKey){e.preventDefault();set(z+(e.deltaY<0?0.1:-0.1));}},{passive:false});
+  // keyboard: Ctrl/Cmd +/-/0
+  addEventListener('keydown',function(e){if(!(e.ctrlKey||e.metaKey))return;
+    if(e.key==='='||e.key==='+'){e.preventDefault();set(z+0.1);}
+    else if(e.key==='-'){e.preventDefault();set(z-0.1);}
+    else if(e.key==='0'){e.preventDefault();set(1);}});
+})();
+</script>
+
+<!-- ===== language switcher (TRANSLATIONS + data-i18n + setLang) ===== -->
+
+<div id="langbar" role="group" aria-label="Language / 语言">
+  <span class="globe">🌐</span>
+  <button class="lang-btn active" id="lang-zh">中文</button>
+  <button class="lang-btn" id="lang-en">EN</button>
+</div>
+<script>
+window.TRANSLATIONS = {en: {"h1": "Turning Radius · 6×4 Geometry & Off-Tracking", "sub1": "Two geometric parameters: <b class=\"v\" data-def=\"le\">effective wheelbase Lₑ</b> (1st axle → drive-tandem centre) · <b class=\"v\" data-def=\"l2\">kingpin-to-axle L₂</b> (fifth wheel → trailer axles). This page assumes the fifth wheel sits at the tandem centre, so <b class=\"v\" data-def=\"kp\">fifth wheel = drive-tandem centre</b> — one single point.", "sub2": "Tags: <span class=\"tag law\">🔵 Regulatory</span> criteria/constants fixed in law &nbsp;·&nbsp; <span class=\"tag eng\">⚪ Engineering</span> derived/conventional for verification (the law only requires the vehicle to fit inside the ring)", "c1h2": "6×4 Tractor + Semitrailer · Parameter Diagram (side view)<span class=\"tag eng\">⚪ Engineering</span>", "sv_axle1": "1st axle", "sv_drive2": "Drive axles ×2 (6×4)", "sv_axle2": "2nd axle", "sv_axle3": "3rd axle", "sv_kp": "Fifth wheel · kingpin = tandem centre", "sv_traxle": "Trailer axles", "sv_le": "Effective wheelbase Lₑ", "sv_le2": "1st axle → drive-tandem centre", "sv_s": "Axle spacing s (2nd → 3rd axle)", "sv_l2": "Kingpin-to-axle L₂ (fifth wheel → trailer axles)", "c1note": "<strong>Effective wheelbase Lₑ</strong> = 1st axle → drive-tandem centre (a 6×4 tandem is measured to the midpoint of the two axles). This page assumes the fifth wheel is mounted at the tandem centre → <strong>Lₑ ends and L₂ starts at the same point (⊕)</strong> — the two segments join end-to-end with no overlap.", "formulasLabel": "◆ Formulas &amp; Regulations — definition, demo, derivation, step-by-step, per-country rules &amp; sources, all in one place", "c2h2": "Formula<span class=\"tag eng\">⚪ Engineering</span>", "c2small": "(the formula = ⚪ engineering derivation; <span style=\"color:#2563eb\">R=12.5</span> and the inner circles 5.3/2.0 are 🔵 regulatory)<br><span class=\"v\" data-def=\"r\" style=\"color:#2563eb;font-weight:700\">R</span> front axle 12.5 m · <span class=\"v\" data-def=\"le\" style=\"color:#0d7d74;font-weight:700\">Lₑ</span> effective wheelbase · <span class=\"v\" data-def=\"l2\" style=\"color:#6d5bd0;font-weight:700\">L₂</span> kingpin-to-axle · <span class=\"v\" data-def=\"ri\" style=\"color:#a16207;font-weight:700\">Rᵢ</span> trailer steady-state radius<br>(if the fifth wheel sits forward of the tandem centre by e, add +e²; this page assumes e=0, so it drops out)", "c2thead": "<th>Rule</th><th>Outer / inner</th><th>Reference</th>", "c2r1": "EU standard <span class=\"tag law\">🔵</span>", "c2r2": "Finland long combos <span class=\"tag law\">🔵</span>", "kidsum": "🧒 Plain-language: what is the animation above actually showing? (click to open/close)", "kv_center": "Turn centre", "kv_cut": "cuts inward", "kv_front": "Front wheels (big circle)", "kv_rear": "Rear / trailer", "kv_shortcut": "(shortcut → small circle)", "kv_big": "Big circle", "kv_small": "Small circle", "kv_tandem": "Drive tandem = fifth wheel ⊕", "kidp1": "🚚 A big truck making a U-turn: <b style=\"color:#2563eb\">the front wheels follow the big outer circle</b>, but <b style=\"color:#a16207\">the tail and the trailer quietly cut the corner</b> onto a smaller circle.<br>The rule says: while turning, the truck must fit <b>between two circles</b> — big outside, small inside. As long as the tail never crosses the inner circle, it passes.", "kidp2": "<b>The formula in the card at the very top computes “how small a circle the tail can cut down to (Rᵢ)”.</b>", "kidul": "<li><b style=\"color:#2563eb\">R</b> = front wheels’ big circle, 12.5 m (fixed by law) · <b style=\"color:#0d7d74\">Lₑ</b> = how long the tractor is · <b style=\"color:#6d5bd0\">L₂</b> = how long the trailer is · <b style=\"color:#a16207\">Rᵢ</b> = the tail’s small circle (computed)</li>\n          <li><b>Longer vehicle (Lₑ, L₂) → cuts further inside → smaller circle → hence the minus signs −</b></li>\n          <li>The hitch (fifth wheel ⊕) sits right between the tractor’s rear wheels: Lₑ ends there, L₂ starts there.</li>\n          <li>“Times itself” (squaring) and “√” are the triangle rule (Pythagoras, middle school): square each length first; after adding/subtracting, √ turns it back into a length.</li>", "kidp3": "✅ As long as the computed <b style=\"color:#a16207\">Rᵢ</b> is still bigger than the inner circle, the turn works. At the current parameters: Rᵢ=<b>8.45 m</b> &gt; EU 5.3, Finland 2.0 → it makes the turn.<br><span style=\"color:#6b7688;\">One sentence: the longer the truck, the more the tail cuts inside; the formula computes the smallest circle the tail reaches — just don’t go smaller than the legal inner circle.</span>", "c4h2": "Step-by-step · expand every number down to its primitives<span class=\"tag eng\">⚪ Engineering</span>", "c4note": "Click any number → see its formula and substituted values → keep expanding until you reach the <span class=\"prim\">highlighted primitive parameters</span>. Updates live with the sliders.", "c4cmp": "Compliance check: <b id=\"s_cmp\">–</b>", "c4cmpbody": "Compare <b class=\"v\" data-def=\"ri\">Rᵢ</b> against the inner circles: EU <span class=\"v\" data-def=\"inner53\" style=\"color:#c0392b\">5.3 m</span> / Finland <span class=\"v\" data-def=\"inner20\" style=\"color:#c0392b\">2.0 m</span>.", "c4r2body": "<code>R² = 12.5²</code>; <span class=\"prim v\" data-def=\"r\">R = 12.5 m</span> (regulatory outer-circle basis, primitive)", "c4le2body": "<code>Lₑ²</code>; first compute Lₑ ↓", "c4lebody": "<span class=\"prim v\" data-def=\"le\">Effective wheelbase Lₑ (1st axle → drive-tandem centre) · primitive parameter</span>", "c4l2body": "<span class=\"prim v\" data-def=\"l2\">Kingpin-to-axle L₂ (fifth wheel = tandem centre → trailer axles) · primitive (depends on the paired trailer)</span>", "c4off": "Rear off-tracking <span class=\"v\" data-def=\"r\">R</span> − <span class=\"v\" data-def=\"ri\">Rᵢ</span> = <b id=\"s_off\">–</b>", "c4offbody": "<code>12.5 − Rᵢ</code>; Rᵢ as above.", "c4dtc": "Semitrailer “deemed compliant” limit & L₂ check: <b id=\"s_dtc\">–</b>", "c4dtcbody": "<code>limit = √((12.5−2.04)²−(5.3+W/2)²)</code> = <b class=\"v\" data-def=\"dtcrow\">8.135 m</b> (W=2.55); compare <span class=\"v\" data-def=\"l2\" style=\"color:#6d5bd0;font-weight:700\">L₂</span>=<span id=\"s_l2b\"></span>.", "c4prims": "<span class=\"prim\">2.04 = kingpin → semitrailer front radius</span> · <span class=\"prim\">5.3 = EU inner circle</span> · <span class=\"prim\">W = vehicle width</span> (all regulatory/primitive values)", "c4defaults": "Default example values: effective wheelbase <b>5.33</b> (= nominal wheelbase 4.65 + half the 1.35 m axle spacing); fifth wheel at the tandem centre (⊕ one point); kingpin-to-axle <b>7.50</b>. All can be changed with the sliders above to match the actual vehicle.", "perParamLabel": "▾ Per-Parameter Deep-Dive (cont'd) — R / Inner Circle Threshold / Rᵢ, each its own section with a per-country breakdown", "c11h2a": "<span style=\"color:#9f1239\">\u2460 Overall Length</span><span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "c11a_note0": "Besides the turning circle, EU 96/53/EC also independently caps overall length \u2014 a separate criterion from turning-circle compliance, checked independently.", "c11at": "<th>Configuration</th><th>Limit</th>", "c11ab": "\n        <tr><td>Rigid tractor</td><td>12.00 m</td></tr>\n        <tr id=\"def-len-art\"><td>Articulated (tractor+semitrailer)</td><td class=\"be\">16.50 m</td></tr>\n        <tr><td>Truck + full trailer</td><td>18.75 m</td></tr>\n        <tr><td>Kingpin to rear of trailer (bounds the semitrailer's box length)</td><td class=\"wr\">≤ 12.00 m</td></tr>\n      ", "c11anote": "Source: <a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC Annex I §1</a>. The 16.50 m articulated-vehicle length is \"front bumper → rear of trailer\" overall length — a different quantity from the turning-geometry Lₑ/L₂ (wheelbases); the same vehicle must satisfy both.<br>If the combination length exceeds the 16.50 m baseline cap, it relies on the EU's dedicated extension clause for <strong>\"45ft/40ft container-carrying articulated combinations\"</strong> (96/53/EC Annex I and subsequent amendments allow extended length for container-transport combinations, subject to member-state transit permits) — this is not a blanket exemption for ordinary articulated vehicles; verify each transit country recognizes this extension before crossing borders. Check the actual vehicle against every limit above.", "c11a_ctable_thead": "<th>Country</th><th>Max length</th>", "c11a_ctable_tbody": "\n        <tr><td>\ud83c\uddf8\ud83c\uddea Sweden</td><td>25.25 m (trial 34.5)</td></tr>\n        <tr><td>\ud83c\uddeb\ud83c\uddee Finland</td><td><strong>34.5 m</strong></td></tr>\n        <tr><td>\ud83c\uddf3\ud83c\uddf4 Norway</td><td>19.5 \u00b7 modular 25.25 m</td></tr>\n        <tr><td>\ud83c\udde9\ud83c\uddf0 Denmark</td><td>Modular 25.25 \u00b7 EMS2 34 m</td></tr>\n        <tr><td>\ud83c\udde7\ud83c\uddea Belgium</td><td>18.75 \u00b7 LZV 25.25 m</td></tr>\n      ", "c11a_jump": "\u2191 Jump to Overall length's first appearance (side-view card)", "c11h2b": "<span style=\"color:#713f12\">\u2461 Gross Vehicle Weight</span><span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "c11b_note0": "Besides the turning circle, EU 96/53/EC also independently caps gross vehicle weight (GVW, tiered by axle count) \u2014 a separate criterion from turning-circle compliance, checked independently.", "c11bt": "<th>Type</th><th>Axles</th><th>Limit</th>", "c11bb": "\n        <tr><td>Rigid, 2-axle</td><td>2</td><td>18 t</td></tr>\n        <tr><td>Rigid, 3-axle (tractor unit)</td><td>3</td><td>25 (air suspension 26) t</td></tr>\n        <tr id=\"def-gvw44\"><td>Tractor (2-axle) + semitrailer (3-axle), 5-axle articulated <span class=\"tag law\">\ud83d\udd35</span></td><td class=\"be\">5</td><td class=\"be\">44 t</td></tr>\n        <tr><td>Tractor (3-axle) + semitrailer (2-axle), 5-axle articulated</td><td>5</td><td>40 t (44 t in some member states)</td></tr>\n        <tr><td>Tractor (3-axle) + semitrailer (3-axle), 6-axle articulated</td><td>6</td><td>44 t</td></tr>\n      ", "c11bnote": "A typical 6×4: tractor with 3 axles (1 steer + 2 drive) + a 3-axle semitrailer → <strong>standard EU 44 t GVW cap</strong> (general international transport); Belgian international transport uses the same 40/44 t framework, check against the table below. A combination designed above 44 t GVW can only run at full load in markets recognizing Nordic HCT (High Capacity Transport) permits (Sweden/Finland); ordinary EU member-state domestic transport requires derating to ≤44 t. Source: <a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC Annex I §2-3</a>. Check the actual vehicle against every limit above.", "c11b_ctable_thead": "<th>Country</th><th>Max weight</th>", "c11b_ctable_tbody": "\n        <tr><td>\ud83c\uddf8\ud83c\uddea Sweden</td><td>64 t (BK4 74)</td></tr>\n        <tr><td>\ud83c\uddeb\ud83c\uddee Finland</td><td><strong>76 t</strong></td></tr>\n        <tr><td>\ud83c\uddf3\ud83c\uddf4 Norway</td><td>60 t (trial 74)</td></tr>\n        <tr><td>\ud83c\udde9\ud83c\uddf0 Denmark</td><td>60 t</td></tr>\n        <tr><td>\ud83c\udde7\ud83c\uddea Belgium</td><td>44 t domestic / 40 t international</td></tr>\n      ", "c11h2c": "<span style=\"color:#1e293b\">\u2462 Axle &amp; Axle-Group Load Limits</span><span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "c11c_note0": "Besides the turning circle, EU 96/53/EC also independently caps single-axle and axle-group loads (bounding load distribution) \u2014 a separate criterion from turning-circle compliance, checked independently.", "c11ct": "<th>Axle type</th><th>Limit</th>", "c11cb": "\n        <tr><td>Single non-driven axle</td><td>10 t</td></tr>\n        <tr id=\"def-driveaxle\"><td>Driven (motor) axle <span class=\"tag law\">🔵</span></td><td class=\"wr\">11.5 t</td></tr>\n        <tr><td>Tandem, spacing &lt;1.0m</td><td>11.5 t</td></tr>\n        <tr><td>Tandem, 1.0≤spacing&lt;1.3 m</td><td>16 t</td></tr>\n        <tr id=\"def-tandem135\"><td>Tandem, 1.3≤spacing&lt;1.8 m <span class=\"tag law\">🔵</span></td><td class=\"be\">18 t (drive tandem 19 t)</td></tr>\n        <tr><td>Tri-axle group ≤1.3m</td><td>21 t</td></tr>\n        <tr><td>Tri-axle group &gt;1.3m</td><td>24 t</td></tr>\n      ", "c11cnote": "Drive axle spacing <b class=\"v\" data-def=\"s\">s=1.35 m</b> (the same constant used in the turning-geometry axle-spacing row) falls in the \"1.3–1.8 m\" tier → drive tandem group limit <b>19 t</b>; single non-driven front axle limit <b>10 t</b>. <strong>Checking GVW requires satisfying both: Σ axle-group limits ≥ actual per-group load, AND total weight ≤ 44 t</strong> — passing single-axle checks doesn't guarantee GVW compliance, or vice versa. When an axle group runs close to its limit, leave an engineering margin to avoid exceeding it through load-distribution shifts or calibration error. Source: <a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC Annex I §3</a>. Check the actual vehicle against every limit above.", "c11summary": "<strong style=\"color:#0e1726;\">The three criteria are independent:</strong> turning circle (this page's main subject, bounding the L\u2091/L\u2082 geometric combination), overall length (bounding the straight-line front-to-rear distance), and gross weight & axle loads (bounding load distribution) each come from different clauses of 96/53/EC and must be checked separately \u2014 satisfying the turning geometry does not substitute for length/weight compliance.", "sv_ohF": "Front overhang", "sv_ohF2": "Frontmost point \u2192 1st axle", "sv_204": "Kingpin\u2192front radius \u2264 2.04 m", "sv_2042": "Kingpin \u2192 trailer front", "sv_ktr": "Kingpin to rear \u2264 12.00 m", "sv_ktr2": "Kingpin \u2192 trailer rear", "sv_ohR": "Rear overhang", "sv_ohR2": "Last axle \u2192 rear", "sv_len": "Overall length", "sv_len2": "Illustrative, articulated cap 16.50 m", "sv_height": "Height \u2264 4.00 m", "pOhF_h2": "<span style=\"color:#db2777\">Front Overhang</span> (frontmost point \u2192 1st axle)<span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "pOhF_note": "There's no single fixed-metre cap on front overhang \u2014 96/53/EC doesn't set one for goods vehicles specifically. Buses/coaches have a dedicated front-swing limit (\u22640.6 m), but a goods vehicle's front overhang is instead indirectly bounded by the <strong>turning circle</strong> (R=12.5 m outer radius) and axle layout: a longer front overhang pushes this segment further outward, making it more likely to sweep outside the turning circle.", "pOhF_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "pOhF_tbody": "\n        <tr><td>Goods vehicle front overhang</td><td class=\"wr\">No independent numeric cap (indirectly bounded by the turning circle)</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a></td></tr>\n        <tr><td>Bus/coach front swing</td><td style=\"font-weight:700\">\u2264 0.6 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a></td></tr>\n      ", "pOhF_jump": "\u2191 Jump to Front overhang's first appearance (side-view card)", "pOhR_h2": "<span style=\"color:#0891b2\">Rear Overhang</span> (last axle \u2192 trailer rear)<span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "pOhR_note": "Rear overhang (last axle to the rear of the vehicle) isn't a fixed metre figure \u2014 it's a <strong>ratio</strong>: no more than 60% of the wheelbase. This is a third, independent constraint alongside kingpin-to-axle L\u2082 and kingpin-to-rear (\u226412.00 m) \u2014 the same vehicle must satisfy all three at once.", "pOhR_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "pOhR_tbody": "\n        <tr><td>Rear overhang</td><td style=\"font-weight:700\">\u2248 \u2264 60% of wheelbase</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a></td></tr>\n      ", "pOhR_jump": "\u2191 Jump to Rear overhang's first appearance (side-view card)", "p204_h2": "<span style=\"color:#7c3aed\">Kingpin\u2192Front Radius</span> (kingpin \u2192 trailer front)<span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "p204_note": "One of the constants Reg 1230/2012 hard-codes directly, and also an input to the L\u2082 section's \"deemed compliant\" formula (\u221a((12.5\u22122.04)\u00b2\u2212(5.3+W/2)\u00b2) \u2248 8.135 m). It bounds the <strong>fifth wheel-to-trailer-front</strong> segment \u2014 a different quantity from kingpin-to-axle L\u2082 (fifth wheel \u2192 trailer axles): a longer L\u2082 doesn't mean this segment is longer too.", "p204_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "p204_tbody": "\n        <tr><td>Kingpin\u2192front radius</td><td style=\"color:#7c3aed;font-weight:700\">\u2264 2.04 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230\" target=\"_blank\" rel=\"noopener\">Reg 1230/2012</a></td></tr>\n      ", "p204_note2": "This constant is shared with the \"deemed compliant\" shortcut formula in the L\u2082 deep-dive section \u2014 see the L\u2082 section above.", "p204_jump": "\u2191 Jump to Kingpin\u2192front radius's first appearance (side-view card)", "pKtr_h2": "<span style=\"color:#4338ca\">Kingpin to Rear</span> (kingpin \u2192 trailer rear)<span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "pKtr_note": "Reg 1230/2012 caps the whole \"kingpin to rear of trailer\" span at \u226412.00 m. This is independent of kingpin-to-axle L\u2082 (fifth wheel \u2192 trailer axles): even with a short L\u2082 (axles mounted well forward), a long enough cargo box can still hit this 12.00 m cap \u2014 the two need checking separately.", "pKtr_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "pKtr_tbody": "\n        <tr><td>Kingpin to rear of trailer</td><td style=\"color:#4338ca;font-weight:700\">\u2264 12.00 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230\" target=\"_blank\" rel=\"noopener\">Reg 1230/2012</a></td></tr>\n      ", "pKtr_jump": "\u2191 Jump to Kingpin to rear's first appearance (side-view card)", "pW_h2": "<span style=\"color:#a21caf\">Width</span><span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "pW_note": "Width is a lateral (side-to-side) dimension \u2014 the side-view diagram on this page is a longitudinal (front-to-back) elevation and can't depict lateral width, so there's no matching dimension bar on it; the value is listed here as text only.", "pW_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "pW_tbody": "\n        <tr><td>Standard vehicle</td><td style=\"color:#a21caf;font-weight:700\">\u2264 2.55 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a> Annex I \u00a71</td></tr>\n        <tr><td>Temperature-controlled body</td><td style=\"color:#a21caf;font-weight:700\">\u2264 2.60 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a> Annex I \u00a71</td></tr>\n      ", "pW_jump": "\u2191 Jump to W's first appearance (L\u2082 deep-dive card)", "pH_h2": "<span style=\"color:#65a30d\">Height</span><span class=\"tag law\">\ud83d\udd35 Regulatory</span>", "pH_note": "Height is a uniform EU-wide cap \u2014 no independent country-specific relaxation found.", "pH_thead": "<th>Item</th><th>Limit</th><th>Source</th>", "pH_tbody": "\n        <tr><td>Overall height</td><td style=\"color:#65a30d;font-weight:700\">\u2264 4.00 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a> Annex I \u00a71</td></tr>\n      ", "pH_jump": "\u2191 Jump to Height's first appearance (side-view card)", "c11a_jump": "\u2191 Jump to Overall length's first appearance (side-view card)", "pR_h2": "<span style=\"color:#2563eb\">R</span> · Outer Radius (front-axle reference)<span class=\"tag law\">🔵 Regulatory</span>", "pR_note": "R is the <strong>outer radius</strong> the front axle sweeps in steady-state turning — the one constant on this page that is <strong>identical across every market</strong>. All the country differences live in the Rᵢ section below (the pass threshold and test method), not in R itself.", "pR_thead": "<th>Country/Market</th><th>R value</th><th>Source</th>", "pR_tbody": "\n        <tr><td>🇪🇺 EU baseline / 🇧🇪 Belgium</td><td style=\"color:#2563eb;font-weight:700\">12.5 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a></td></tr>\n        <tr><td>🇸🇪 Sweden</td><td style=\"color:#2563eb;font-weight:700\">12.5 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf\" target=\"_blank\" rel=\"noopener\">TSFS 2012:126</a> §2</td></tr>\n        <tr><td>🇳🇴 Norway</td><td style=\"color:#2563eb;font-weight:700\">12.5 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9\" target=\"_blank\" rel=\"noopener\">forskrift FOR-2009-01-20-78</a> §9</td></tr>\n        <tr><td>🇫🇮 Finland</td><td style=\"color:#2563eb;font-weight:700\">12.5 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.finlex.fi/fi/laki/ajantasa/2018/20180729\" target=\"_blank\" rel=\"noopener\">Tieliikennelaki 729/2018</a> §132</td></tr>\n        <tr><td>🇩🇰 Denmark</td><td style=\"color:#2563eb;font-weight:700\">12.5 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.lovtidende.dk/api/pdf/253937\" target=\"_blank\" rel=\"noopener\">BEK 1447/2025</a> §5</td></tr>\n      ", "pLe_h2": "<span style=\"color:#0d7d74\">Lₑ</span> · Effective Wheelbase (1st axle → drive-tandem centre)<span class=\"tag eng\">⚪ Engineering parameter</span>", "pLe_note": "Lₑ is a <strong>design dimension of the tractor itself</strong>, not a number any country writes directly into law — no country was found to cap Lₑ on its own. It's constrained indirectly through two paths: ① the turning-geometry formula (a bigger Lₑ eats into the margin left for L₂); ② the overall combination-length cap (12/16.5/18.75 m, see the Length/Weight section below — same EU baseline everywhere plus each country's own HCT extension scheme). The page default example uses <b class=\"v\" data-def=\"le\">5.33 m</b> (nominal wheelbase 4.65 + half the 1.35 m axle spacing) — set it to match the actual vehicle.", "pLe_thead": "<th>Country/Market</th><th style=\"color:#c0392b\">Inner Circle Threshold</th><th>Lₑ max given current L₂ (live)</th><th>Does the current value pass?</th>", "pLe_tbody": "\n        <tr><td>🇪🇺 EU baseline / 🇧🇪 Belgium / 🇩🇰 Denmark</td><td style=\"color:#c0392b;font-weight:700\">5.3 m</td><td class=\"v\" data-def=\"le\" style=\"color:#0d7d74;font-weight:700\" id=\"s_lemax_eu\">–</td><td id=\"s_leok_eu\">–</td></tr>\n        <tr><td>🇸🇪 Sweden / 🇳🇴 Norway</td><td style=\"color:#c0392b;font-weight:700\">2.0 m</td><td class=\"v\" data-def=\"le\" style=\"color:#0d7d74;font-weight:700\" id=\"s_lemax_sn\">–</td><td id=\"s_leok_sn\">–</td></tr>\n        <tr><td>🇫🇮 Finland</td><td colspan=\"3\" style=\"text-align:left;color:var(--muted);\">Does not apply — Finland uses the 120° fixed-angle + tail-swing test, not a \"solve for Lₑ given L₂\" circle formula (see the Rᵢ section below)</td></tr>\n      ", "pLe_note2": "Method: Lₑ<sub>max</sub> = √(156.25 − L₂² − inner²) — same formula, holding L₂ fixed and solving for Lₑ. Drag the sliders in the \"side view\" card at the very top and this table updates live.", "pLe_jump": "↑ Jump to Lₑ's first appearance (side-view card)", "pR_jump": "↑ Jump to R's first appearance (formula card)", "pInner_h2": "Inner Circle · Pass Threshold (the floor Rᵢ must clear)<span class=\"tag law\">🔵 Regulatory · varies by country</span>", "pInner_note0": "The inner circle is the <strong>second hard-coded constant</strong> in the formula — but unlike R, it <strong>differs by country</strong>, and Finland doesn't even use a single inner-circle number to decide pass/fail. This is where each country's turning-compliance rule genuinely diverges.", "pInner_note1": "These are the exact same country constants used in the live-solved Lₑ/L₂ tables above, and the pass bar the Rᵢ section below checks against.", "pL2_jump": "↑ Jump to L₂'s first appearance (side-view card)", "pRi_jump": "↑ Jump to Rᵢ's first appearance (formula card)", "pL2_h2": "<span style=\"color:#6d5bd0\">L₂</span> · Kingpin-to-Axle (fifth wheel → trailer axles)<span class=\"tag law\">🔵 Partly regulatory</span>", "pL2_note": "L₂ is a dimension of <strong>whichever semitrailer is attached</strong>, but EU law provides a fixed \"deemed compliant\" threshold formula (independent of Lₑ):", "pL2_note1a": "<strong>Key finding: Sweden's regulation reuses the exact same constants</strong> (12.50 / 2.04 / 5.30) verbatim — this \"deemed compliant\" shortcut is the SAME formula in Sweden and the EU, even though Sweden's own full swept-circle test uses a 2.0 m inner circle, not 5.3 m.", "pL2_thead1": "<th>Country/Market</th><th>\"Deemed compliant\" shortcut threshold</th><th>Source</th>", "pL2_tbody1": "\n        <tr><td>🇪🇺 EU baseline</td><td style=\"color:#6d5bd0;font-weight:700\">8.135 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230\" target=\"_blank\" rel=\"noopener\">Reg 1230/2012</a></td></tr>\n        <tr><td>🇸🇪 Sweden</td><td style=\"color:#6d5bd0;font-weight:700\">8.135 m (same formula, same constants)</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf\" target=\"_blank\" rel=\"noopener\">TSFS 2012:126</a> §2</td></tr>\n      ", "pL2_note2": "But the \"shortcut\" is only a test-exemption threshold — a semitrailer with L₂ over 8.135 m can still comply via the full swept-circle test, just with different pass bars (inner circles) per country. Given the current Lₑ, the actual L₂ ceiling under each country's full test (live) —", "pL2_thead2": "<th>Country/Market</th><th style=\"color:#c0392b\">Inner Circle Threshold</th><th>L₂ max given current Lₑ (live)</th><th>Does the current value pass?</th>", "pL2_tbody2": "\n        <tr><td>🇪🇺 EU baseline / 🇧🇪 Belgium / 🇩🇰 Denmark</td><td style=\"color:#c0392b;font-weight:700\">5.3 m</td><td class=\"v\" data-def=\"l2\" style=\"color:#6d5bd0;font-weight:700\" id=\"s_l2max_eu\">–</td><td id=\"s_l2ok_eu\">–</td></tr>\n        <tr><td>🇸🇪 Sweden / 🇳🇴 Norway</td><td style=\"color:#c0392b;font-weight:700\">2.0 m</td><td class=\"v\" data-def=\"l2\" style=\"color:#6d5bd0;font-weight:700\" id=\"s_l2max_sn\">–</td><td id=\"s_l2ok_sn\">–</td></tr>\n        <tr><td>🇫🇮 Finland</td><td colspan=\"3\" style=\"text-align:left;color:var(--muted);\">Does not apply — see the 120° fixed-angle test in the Rᵢ section below</td></tr>\n      ", "pL2_note3": "<strong>Counter-intuitive part:</strong> Sweden/Norway's full test has a SMALLER inner circle (2.0 m vs EU's 5.3 m), which is actually an EASIER bar to clear — for a given fixed Lₑ, Sweden/Norway's full test permits a LONGER L₂ than the EU baseline test does.", "pRi_h2": "<span style=\"color:#a16207\">Rᵢ</span> · Trailer Steady-State Radius (result)<span class=\"tag eng\">⚪ Computed result</span>", "pRi_note0": "Rᵢ isn't a number any country writes directly into law — it's the <strong>result</strong> computed from R, Lₑ and L₂. What genuinely varies per country is the pass bar it's compared against — that's the standalone <a href=\"#def-inner\" style=\"color:#c0392b;font-weight:700;text-decoration:none;border-bottom:1.5px dotted currentColor;\">Inner Circle Threshold</a> section above. Current value: <b style=\"color:#a16207;font-weight:800\" data-def=\"ri\" id=\"s_riShow\">–</b>.", "pRi_thead": "<th>Country/Market</th><th style=\"color:#c0392b\">Inner Circle Threshold</th><th>Does the current Rᵢ pass? (live)</th>", "pRi_tbody": "\n        <tr><td>🇪🇺 EU baseline / 🇧🇪 Belgium / 🇩🇰 Denmark</td><td style=\"color:#c0392b;font-weight:700\">≥ 5.3 m</td><td id=\"s_ri_ok_eu\">–</td></tr>\n        <tr><td>🇸🇪 Sweden / 🇳🇴 Norway</td><td style=\"color:#c0392b;font-weight:700\">≥ 2.0 m</td><td id=\"s_ri_ok_sn\">–</td></tr>\n        <tr><td>🇫🇮 Finland</td><td colspan=\"2\" style=\"text-align:left;color:var(--muted);\">Does not apply — Finland uses the 120° fixed-angle + tail-swing test; Rᵢ itself isn't Finland's pass criterion (see the Inner Circle Threshold section)</td></tr>\n      ", "pRi_note1": "Each country's exact threshold number, test method and legal source lives in the standalone \"Inner Circle · Pass Threshold\" section above — this table only shows whether the current parameters pass, live.", "c5h2": "Why a sum of squares? · Geometric derivation (Pythagoras)<span class=\"tag eng\">⚪ Engineering</span>", "c5note1": "Look at the real truck: while turning, the <strong>drive tandem (rolling axle)</strong>, the <strong>front axle</strong> and the <strong>turn centre O</strong> form a <strong>right triangle</strong> (right angle at the drive tandem). The front-axle radius <span style=\"color:#2563eb;font-weight:700\">R</span> is the hypotenuse and the tandem radius <span style=\"color:#334155;font-weight:700\">r</span> the short leg → <span style=\"color:#334155;font-weight:700\">r</span> = √(<span style=\"color:#2563eb\">R²</span> − <span style=\"color:#0d7d74\">L²</span>): being “dragged behind” pulls the tandem inward.", "pv_O": "Turn centre O", "pv_drive": "Drive tandem (rolling axle)", "pv_front": "Front axle", "pv_L": "L = effective wheelbase Lₑ", "pv_r": "r (tandem radius)", "pv_R": "R (front-axle radius)", "pv_perp": "O lies on the rolling axle’s perpendicular → 90°", "pv_pyth": "Pythagoras: <tspan fill=\"#2563eb\">R²</tspan> = <tspan fill=\"#334155\">r²</tspan> + <tspan fill=\"#0d7d74\">L²</tspan>", "pv_drag": "Dragged back by L → r &lt; R → tracks inward", "pv_hence": "→ hence −L² in the formula", "c5note2": "Same story once more for the trailer: treat the <strong>fifth wheel (= tandem centre ⊕)</strong> as the “front point” and the <strong>trailer axles</strong> as the rolling axle — another right triangle → subtract L₂² as well. Two Pythagoras steps, chained:", "ch_front": "Front axle", "ch_drag": "dragged back", "ch_kp": "⊕ tandem centre = fifth wheel", "ch_traxle": "Trailer axles", "c5note3": "Chaining both Pythagoras steps gives exactly the formula in the card at the very top: every “dragged-back” segment subtracts one square (tracks inward, eats margin). Requiring R_i ≥ inner circle → <b>Lₑ² + L₂² ≤ 12.5² − inner²</b>. (If the fifth wheel sits forward by e, an extra +e² appears in between.)", "c5law": "<strong style=\"color:#0e1726;\">Does the law assume an angle or a radius?</strong><br><b style=\"color:#2563eb;\">① EU swept circle (96/53/EC) — no angle assumed.</b> It prescribes <strong>two radii</strong> (outer 12.5 / inner 5.3 m) plus a full <strong>360°</strong> sweep. The articulation angle is an outcome, not an input (in steady state on this circle it reaches ≈ <b>41°</b>).<br>This page’s formula takes exactly that <strong>“full-lock, settled on the circle” steady state</strong> — the <strong>maximum articulation angle</strong> for that radius, i.e. the <b style=\"color:#c0392b;\">worst case</b> for off-tracking; the “straight → entering” transition in the animation above never quite reaches it.<br><b style=\"color:#ea580c;\">② Finland — not a 360° circle at all, but a one-shot 120° fixed-angle test.</b> Current rule (Tieliikennelaki 729/2018 §132 + Annex 9, Traficom regulation TRAFICOM/304841/03.04.03.00/2019, in force since June 2020): outer radius <b>12.50 m</b>; when the cab has swung through <b>120°</b>, if the <strong>rear-corner lateral shift S ≤ 0.80 m</strong>, the inner radius R must be ≥ <b>4.00 m</b> — a smaller S allows a proportionally smaller R, but the <strong>absolute floor is 3.70 m</strong>. This test <strong>explicitly specifies an angle (120°), not a full 360° circle</strong> — a different regime from Sweden's/Norway's 360° circle test.", "asumh2": "Assumptions Compared · Turning Rules<span class=\"tag eng\">⚪ Engineering summary</span>", "asumnote0": "Same underlying physics, different pass bars per country — Finland even swapped the whole test method, so its figures aren't directly comparable to the “circle” countries.", "asumthead": "<th>Country</th><th>Test geometry</th><th>What's modeled</th><th>Outer radius R</th><th style=\"color:#c0392b\">Inner Circle Threshold</th><th>Scope</th><th>Legal basis · Source</th>", "asumtbody": "\n        <tr><td style=\"text-align:left;font-weight:700;\">🇸🇪 Sweden</td><td>360° full circle</td><td>Steady-state, fully settled (worst case)</td><td style=\"color:#2563eb\">12.5 m</td><td class=\"be\" style=\"color:#a16207\">Rᵢ ≥ 2.0 m</td><td>Combos &gt;24.0m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf\" target=\"_blank\" rel=\"noopener\">TSFS 2012:126</a> §2</td></tr>\n        <tr><td style=\"text-align:left;font-weight:700;\">🇳🇴 Norway</td><td>360° full circle</td><td>Steady-state, fully settled (worst case)</td><td style=\"color:#2563eb\">12.5 m</td><td class=\"be\" style=\"color:#a16207\">Rᵢ ≥ 2.0 m</td><td>Modulvogntog ≤25.25m/60t</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9\" target=\"_blank\" rel=\"noopener\">forskrift FOR-2009-01-20-78</a> §9(c)(4)</td></tr>\n        <tr><td style=\"text-align:left;font-weight:700;\">🇪🇺 EU baseline / 🇧🇪 Belgium</td><td>360° full circle</td><td>Steady-state, fully settled (worst case)</td><td style=\"color:#2563eb\">12.5 m</td><td class=\"wr\" style=\"color:#a16207\">Rᵢ ≥ 5.3 m</td><td>Standard articulated vehicles</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">96/53/EC</a> + <a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230\" target=\"_blank\" rel=\"noopener\">Reg 1230/2012</a></td></tr>\n        <tr><td style=\"text-align:left;font-weight:700;\">🇩🇰 Denmark</td><td>360° full circle</td><td>Steady-state, fully settled (worst case)</td><td style=\"color:#2563eb\">12.5 m</td><td class=\"wr\" style=\"color:#c0392b;font-weight:700\">≥ 5.3 m</td><td>Standard vehicles (\"a car or combination\")</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.lovtidende.dk/api/pdf/253937\" target=\"_blank\" rel=\"noopener\">BEK 1447/2025</a> §5 (Denmark's Dimensions Regulation states outer 12.50/inner 5.30 m verbatim, matching the EU baseline — an earlier pass mistakenly checked the modular-vehicle trial regulation BEK 1491/2025 instead, which genuinely has no turning clause; §5 of the general regulation is the correct source)</td></tr>\n        <tr><td style=\"text-align:left;font-weight:700;\">🇫🇮 Finland</td><td class=\"wr\" style=\"font-weight:700;\">120° fixed angle (not a circle)</td><td class=\"wr\">Specific-angle transient (closer to a real intersection turn)</td><td style=\"color:#2563eb\">12.5 m</td><td class=\"wr\" style=\"color:#a16207\">S≤0.8m and inner≥4.0m (floor 3.70m if S smaller)</td><td>All HCT combinations</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.finlex.fi/fi/laki/ajantasa/2018/20180729\" target=\"_blank\" rel=\"noopener\">Tieliikennelaki 729/2018</a> §132+Annex9</td></tr>\n      ", "asumnote1": "<strong>How to read this:</strong> Sweden/Norway/EU-baseline/Denmark share identical physics (steady-state, 360° full circle) — they just set the pass bar differently, same circle different number. Finland is the outlier: it swapped the entire test method, not just the number, so its figures aren't directly comparable to a “circle” country. <strong style=\"color:#0d7d74;\">Denmark has now been verified (BEK 1447/2025 §5 states 12.50/5.30 m verbatim) — no longer an assumption.</strong>", "c8h2": "Regulatory sources<span class=\"tag law\">🔵 Official texts</span>", "c8thead": "<th>Figure</th><th>Source (opens in a new tab)</th>", "c8tbody": "\n        <tr><td>Outer 12.5 / inner 5.3 m · length 12/16.5/18.75 · width 2.55/2.60 · height 4.0 · overhangs</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31996L0053\" target=\"_blank\" rel=\"noopener\">Directive 96/53/EC</a> (Annex I)</td></tr>\n        <tr><td>Kingpin→front radius 2.04 m · kingpin→rear 12.0 m · semitrailer “deemed compliant” kingpin-to-axle 8.135 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32012R1230\" target=\"_blank\" rel=\"noopener\">Reg (EU) 1230/2012</a></td></tr>\n        <tr><td>Finland inner 2.0 · 120° test 4.0 · tail swing ≤ 0.8 m · 34.5 m / 76 t</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.finlex.fi/fi/laki/ajantasa/2018/20180729\" target=\"_blank\" rel=\"noopener\">Tieliikennelaki 729/2018</a> §132/§140 · old <a class=\"src\" href=\"https://www.finlex.fi/fi/laki/ajantasa/1992/19921257\" target=\"_blank\" rel=\"noopener\">Asetus 1257/1992</a></td></tr>\n        <tr><td>🇸🇪 Sweden turning 12.5/2.0 m (combos &gt;24m) · BK4 74 t · 25.25 m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.transportstyrelsen.se/TSFS/TSFS%202012_126.pdf\" target=\"_blank\" rel=\"noopener\">TSFS 2012:126</a> §2 · <a class=\"src\" href=\"https://www.transportstyrelsen.se/\" target=\"_blank\" rel=\"noopener\">Transportstyrelsen</a></td></tr>\n        <tr><td>🇫🇮 Finland 120° fixed-angle: outer 12.5/inner≥4.0 (floor 3.70) · shift≤0.8m</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.traficom.fi/files/media/file/HCT%20perustelumuistio_FI.pdf\" target=\"_blank\" rel=\"noopener\">Traficom TRAFICOM/304841/03.04.03.00/2019</a> · <a class=\"src\" href=\"https://www.traficom.fi/\" target=\"_blank\" rel=\"noopener\">Traficom</a></td></tr>\n        <tr><td>🇳🇴 Norway turning 12.5/2.0 m (modulvogntog) · 60 t · trial 74 t</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://lovdata.no/dokument/SFO/forskrift/2009-01-20-78/KAPITTEL_9\" target=\"_blank\" rel=\"noopener\">forskrift FOR-2009-01-20-78 §9</a> · <a class=\"src\" href=\"https://www.vegvesen.no/\" target=\"_blank\" rel=\"noopener\">Statens vegvesen</a></td></tr>\n        <tr><td>🇩🇰 Denmark turning outer 12.5/inner 5.3m (standard vehicles, verified) · EMS2 34 m · 60 t</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://www.lovtidende.dk/api/pdf/253937\" target=\"_blank\" rel=\"noopener\">BEK 1447/2025</a> §5 · <a class=\"src\" href=\"https://www.fstyr.dk/\" target=\"_blank\" rel=\"noopener\">Færdselsstyrelsen</a></td></tr>\n        <tr><td>🇧🇪 Belgium LZV 25.25 m · 44/40 t</td><td style=\"text-align:left;\"><a class=\"src\" href=\"https://mobilit.belgium.be/\" target=\"_blank\" rel=\"noopener\">FOD Mobiliteit</a></td></tr>\n      ", "c8note": "Links point to the official legislation / competent authorities and open in a new tab. This environment could not prefetch EUR-Lex / Finlex (403), so the links are unverified; for formal compliance rely on the opened originals.", "c9h2": "Top view · corner entry (animation + derivation + plain version)<span class=\"tag eng\">⚪ Engineering</span>", "c5h2sum": "📐 Rigorous version: why a sum of squares? · Geometric derivation (Pythagoras) (click to open/close)", "c9legend": "\n        <span><i style=\"border-color:#2563eb\"></i>Front-axle path (R)</span>\n        <span><i style=\"border-color:#a16207\"></i>Trailer-axle path (off-tracking · Rᵢ)</span>\n        <span><i style=\"border-color:#2563eb;border-top-style:dashed\"></i>12.5 m front-axle reference (R)</span>\n        <span><i style=\"border-color:#a16207;border-top-style:dashed\"></i>Rᵢ trailer steady state</span>\n        <span><i style=\"border-color:#c0392b;border-top-style:dotted\"></i>5.3 EU (inner circle)</span>\n        <span><i style=\"border-color:#c0392b;border-top-style:dashed\"></i>2.0 Finland (inner circle)</span>\n        <span><i style=\"border-color:#7c3aed;border-top-style:dashed\"></i>2.04 m semitrailer front radius (about the fifth wheel)</span>\n      ", "btnreset": "↺ Replay", "c10h2": "Live compliance check<span class=\"tag law\">🔵 Regulatory</span>", "ro_ri": "Trailer steady-state radius Rᵢ", "c1ctrlnote": "Drag to adjust Lₑ / L₂ → the animation, formula and every table below update live.", "lab_le": "Effective wheelbase Lₑ", "lab_l2": "Kingpin-to-axle L₂", "c10eq": "<b>Front axle→trailer axles = Lₑ + L₂</b> (joined end-to-end at ⊕)<br><span id=\"eqn\" style=\"font-size:13px;\"></span>", "ro_le": "Effective wheelbase Lₑ", "ro_off": "Off-tracking R−Rᵢ", "ro_cmp": "Meets inner circle", "ro_dtc": "Semitrailer kingpin-to-axle limit (EU deemed compliant · W=2.55)", "c10note": "Only judgments tied directly to a legal threshold are shown here; the specific values of Lₑ/L₂/Rᵢ each live in their own dedicated section below."}};
+var PAGE_TITLES = {zh: '转弯半径 · 6×4 参数与入弯偏移', en: 'Turning Radius · 6×4 Geometry & Off-Tracking'};
+var ZH_SNAP = null;
+function setLang(lang){
+  if(!ZH_SNAP){
+    ZH_SNAP = {};
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n');
+      if(!(k in ZH_SNAP)) ZH_SNAP[k] = el.innerHTML;
+    });
+  }
+  window.LANG = lang;
+  var t = lang === 'zh' ? ZH_SNAP : (window.TRANSLATIONS[lang] || {});
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(t[k] !== undefined) el.innerHTML = t[k];
+  });
+  document.title = PAGE_TITLES[lang] || PAGE_TITLES.zh;
+  document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('lang-' + lang);
+  if(btn) btn.classList.add('active');
+  if(window.__i18nRefresh) window.__i18nRefresh();   // re-render canvas labels + live numbers
+}
+document.getElementById('lang-zh').addEventListener('click', function(){ setLang('zh'); });
+document.getElementById('lang-en').addEventListener('click', function(){ setLang('en'); });
+</script>
+
+
+
+<script>
+(function(){
+  var STORAGE_KEY = 'artifact-col-widths-v1-' + (location.pathname || 'default');
+  function loadWidths(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; } }
+  function saveWidths(w){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(w)); } catch(e){} }
+  function tableKey(table, idx){
+    var ths = table.querySelectorAll('th');
+    var text = Array.prototype.map.call(ths, function(th){ return th.textContent.trim(); }).join('|');
+    return text || ('table-' + idx);
+  }
+  function initResizableColumns(){
+    var widths = loadWidths();
+    var tables = document.querySelectorAll('table');
+    tables.forEach(function(table, idx){
+      if (table.dataset.resizable) return;
+      table.dataset.resizable = '1';
+      var headerRow = table.querySelector('thead tr') || table.querySelector('tr');
+      if (!headerRow) return;
+      var ths = Array.prototype.slice.call(headerRow.children);
+      if (ths.length < 2) return;
+      var key = tableKey(table, idx);
+      var saved = widths[key];
+      var natural = ths.map(function(th){ return th.getBoundingClientRect().width; });
+      var total = natural.reduce(function(a,b){return a+b;}, 0) || 1;
+      var pct = saved && saved.length === ths.length ? saved : natural.map(function(w){ return w/total*100; });
+      var colgroup = document.createElement('colgroup');
+      pct.forEach(function(p){
+        var col = document.createElement('col');
+        col.style.width = p + '%';
+        colgroup.appendChild(col);
+      });
+      table.insertBefore(colgroup, table.firstChild);
+      table.style.tableLayout = 'fixed';
+      ths.forEach(function(th, i){
+        if (i === ths.length - 1) return;
+        var handle = document.createElement('span');
+        handle.className = 'col-resizer';
+        handle.title = 'Drag to resize column · double-click to reset';
+        th.appendChild(handle);
+        var startX, startPct, nextStartPct, cols;
+        function onMove(e){
+          var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          var dx = clientX - startX;
+          var tableWidth = table.getBoundingClientRect().width;
+          var dPct = dx / tableWidth * 100;
+          var newPct = Math.max(4, startPct + dPct);
+          var newNextPct = Math.max(4, nextStartPct - dPct);
+          if (newPct < 4 || newNextPct < 4) return;
+          cols[i].style.width = newPct + '%';
+          cols[i+1].style.width = newNextPct + '%';
+        }
+        function onUp(){
+          handle.classList.remove('active');
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          table.classList.remove('resizing');
+          var currentWidths = cols.map(function(c){ return parseFloat(c.style.width); });
+          var w = loadWidths();
+          w[key] = currentWidths;
+          saveWidths(w);
+        }
+        handle.addEventListener('pointerdown', function(e){
+          e.preventDefault(); e.stopPropagation();
+          cols = table.querySelectorAll('col');
+          handle.classList.add('active');
+          table.classList.add('resizing');
+          startX = e.touches ? e.touches[0].clientX : e.clientX;
+          startPct = parseFloat(cols[i].style.width);
+          nextStartPct = parseFloat(cols[i+1].style.width);
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        });
+        handle.addEventListener('dblclick', function(e){
+          e.preventDefault(); e.stopPropagation();
+          cols = table.querySelectorAll('col');
+          var avg = (parseFloat(cols[i].style.width) + parseFloat(cols[i+1].style.width)) / 2;
+          cols[i].style.width = avg + '%';
+          cols[i+1].style.width = avg + '%';
+          var currentWidths = Array.prototype.map.call(cols, function(c){ return parseFloat(c.style.width); });
+          var w = loadWidths();
+          w[key] = currentWidths;
+          saveWidths(w);
+        });
+      });
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initResizableColumns);
+  } else {
+    initResizableColumns();
+  }
+})();
+</script>
+</body>
+</html>

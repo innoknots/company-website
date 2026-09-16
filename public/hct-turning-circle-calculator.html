@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>芬兰HCT（High Capacity Transport）车辆组合通道圆计算手册</title>
+<meta name="description" content="芬兰 Traficom HCT 车辆组合技术规定：11 种官方组合类型示意图 + 7 个通道圆计算页，公式系数逐项核对官方 Excel，附法规原文对照。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="芬兰 HCT 通道圆计算手册">
+<meta property="og:description" content="11 种官方车辆组合类型 · 7 个通道圆计算页 · 公式与官方 Excel 逐项核对 · 附法规原文对照">
+<meta property="og:site_name" content="Windrose 内部工具">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="芬兰 HCT 通道圆计算手册">
+<meta name="twitter:description" content="11 种官方车辆组合类型 · 7 个通道圆计算页 · 公式与官方 Excel 逐项核对 · 附法规原文对照">
+<style>:root{color-scheme:light}img{max-width:100%}</style>
+<style>
+  :root{
+    --paper:#f3f4ef;
+    --paper-dim:#eceee7;
+    --ink:#1b2220;
+    --ink-soft:#4d5651;
+    --line:#c7cbbe;
+    --line-soft:#dadcd2;
+    --accent:#26545f;
+    --accent-2:#3d7c86;
+    --accent-soft:#dbe6e4;
+    --warn:#a95a26;
+    --good:#3c7a4e;
+    --good-bg:#e4efe6;
+    --bad:#a63b34;
+    --bad-bg:#f5e4e2;
+    --sans:"PingFang SC","Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent);}
+  .app{max-width:1360px;margin:0 auto;padding:0 28px 80px;}
+
+  /* ---------- split shell: sidebar + content, always both visible ---------- */
+  .shell{display:grid;grid-template-columns:300px 1fr;gap:30px;align-items:start;padding-top:28px;}
+  .sidebar{
+    position:sticky;top:78px;max-height:calc(100vh - 96px);overflow-y:auto;
+    display:flex;flex-direction:column;gap:24px;padding:2px 10px 20px 2px;margin:-2px -10px 0 -2px;
+  }
+  @media (max-width:920px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:static;max-height:none;}
+  }
+  .side-block{display:flex;flex-direction:column;gap:8px;}
+  .section-label.small{font-size:10.5px;margin-bottom:2px;}
+  .side-list{display:flex;flex-direction:column;gap:6px;}
+  .side-item{
+    display:flex;align-items:center;gap:10px;text-align:left;width:100%;
+    background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 10px;
+    cursor:pointer;font-family:inherit;color:inherit;transition:border-color .15s, background-color .15s;
+  }
+  .side-item:hover{border-color:var(--accent-2);}
+  .side-item.active{border-color:var(--accent);background:var(--accent-soft);}
+  .side-item.disabled{cursor:default;opacity:.55;}
+  .side-item.disabled:hover{border-color:var(--line);}
+  .side-diagram{flex:none;width:80px;}
+  .side-diagram svg{display:block;width:100%;height:auto;}
+  .side-item-text{min-width:0;}
+  .side-item-top{margin-bottom:2px;}
+  .side-item-name{font-size:12px;font-weight:600;line-height:1.35;}
+  .side-item-tab{gap:9px;}
+  .side-item-tab .side-item-name{font-size:12.5px;}
+  .mini-note{margin-left:auto;flex:none;font-family:var(--mono);font-size:9.5px;color:var(--warn);white-space:nowrap;}
+  .content{min-width:0;}
+
+  /* ---------- header ---------- */
+  header.top{
+    position:sticky;top:0;z-index:40;
+    background:rgba(243,244,239,.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .top-inner{
+    max-width:1180px;margin:0 auto;padding:14px 28px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .brand-mark{
+    width:34px;height:34px;border:1.5px solid var(--accent);border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;
+    flex:none;
+  }
+  .brand-text .eyebrow{
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2);font-weight:600;
+  }
+  .brand-text h1{margin:1px 0 0;font-size:16px;font-weight:700;letter-spacing:.01em;}
+  .top-actions{display:flex;gap:10px;align-items:center;}
+  .btn{
+    font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.02em;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:8px 14px;border-radius:3px;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;gap:6px;transition:border-color .15s,color .15s;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:focus-visible, a:focus-visible, .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .btn.ghost{border-color:transparent;background:transparent;padding:8px 4px;}
+
+  /* ---------- hero / intro ---------- */
+  .intro{padding:0 0 28px;border-bottom:1px solid var(--line);margin-bottom:36px;}
+  .kicker{
+    font-family:var(--mono);font-size:12px;color:var(--accent-2);letter-spacing:.04em;
+    margin-bottom:10px;
+  }
+  .intro h2{
+    font-size:clamp(24px,3.4vw,34px);margin:0 0 14px;font-weight:800;letter-spacing:-.01em;
+    text-wrap:balance;max-width:26ch;
+  }
+  .intro p{max-width:66ch;color:var(--ink-soft);font-size:15px;margin:0 0 6px;}
+  .intro .rule-strip{
+    display:flex;flex-wrap:wrap;gap:22px;margin-top:22px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);
+  }
+  .rule-strip b{color:var(--ink);font-weight:700;}
+  .source-line{margin-top:18px;font-size:12.5px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:6px 16px;}
+  .source-line a{text-decoration:none;border-bottom:1px dotted var(--accent-2);}
+
+  /* ---------- scenario grid ---------- */
+  .section-label{
+    font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent-2);font-weight:700;margin:0 0 16px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-label::after{content:"";flex:1;height:1px;background:var(--line);}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:48px;
+  }
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:4px;
+    display:flex;flex-direction:column;overflow:hidden;
+    cursor:pointer;text-align:left;padding:0;font-family:inherit;color:inherit;
+    transition:box-shadow .15s, border-color .15s, transform .15s;
+  }
+  .card:hover{border-color:var(--accent-2);box-shadow:0 6px 18px -10px rgba(30,50,50,.35);transform:translateY(-1px);}
+  .card.disabled{cursor:default;}
+  .card.disabled:hover{transform:none;box-shadow:none;border-color:var(--line);}
+  .diagram-wrap{
+    background:
+      linear-gradient(var(--paper-dim) 1px,transparent 1px) 0 0/100% 14px,
+      linear-gradient(90deg,var(--paper-dim) 1px,transparent 1px) 0 0/14px 100%,
+      #fbfbf8;
+    border-bottom:1px solid var(--line);
+    padding:10px 6px 0;
+  }
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  .card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .type-row{display:flex;align-items:center;gap:8px;}
+  .type-badge{
+    font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;background:var(--accent);
+    padding:2px 7px;border-radius:2px;letter-spacing:.02em;flex:none;
+  }
+  .type-badge.muted{background:var(--ink-soft);}
+  .type-badge.mini{font-size:9.5px;padding:1px 5px;}
+  .fi-name{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);}
+  .cn-name{font-size:15px;font-weight:700;margin:2px 0 0;letter-spacing:-.005em;}
+  .card-desc{font-size:12.8px;color:var(--ink-soft);flex:1;}
+  .card-foot{
+    margin-top:8px;padding-top:10px;border-top:1px dashed var(--line-soft);
+    display:flex;align-items:center;justify-content:space-between;font-size:12px;
+  }
+  .tab-tag{font-family:var(--mono);color:var(--accent-2);font-weight:600;}
+  .go-arrow{color:var(--accent);font-weight:700;}
+  .note-tag{font-size:11.5px;color:var(--warn);font-weight:600;}
+
+  /* ---------- legend ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:14px 22px;margin:-6px 0 36px;font-size:12px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:11px;height:11px;border-radius:2px;display:inline-block;}
+
+  /* ---------- detail pages ---------- */
+  .detail-head{padding:0 0 18px;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .breadcrumb{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:12px;}
+  .breadcrumb a{color:var(--accent-2);text-decoration:none;}
+  .detail-head h2{font-size:clamp(22px,3vw,30px);margin:0 0 8px;font-weight:800;text-wrap:balance;}
+  .type-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .type-pill{
+    font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);
+    border:1px solid var(--accent-2);background:var(--accent-soft);
+    padding:3px 9px;border-radius:20px;
+  }
+  .detail-desc{max-width:70ch;color:var(--ink-soft);font-size:14.5px;margin-top:12px;}
+
+  .pdf-quote{
+    border-left:3px solid var(--accent-2);background:var(--accent-soft);
+    padding:13px 18px;border-radius:0 4px 4px 0;margin-top:16px;max-width:74ch;
+  }
+  .pdf-quote-ref{
+    font-family:var(--mono);font-size:10.5px;color:var(--accent);font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+  }
+  .pdf-quote-fi{
+    margin:0 0 9px;padding-left:11px;border-left:2px solid var(--line);
+    font-style:italic;font-size:12.5px;color:var(--ink-soft);line-height:1.55;
+  }
+  .pdf-quote-zh{font-size:13.5px;color:var(--ink);line-height:1.65;}
+
+  .layout-2col{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;margin-bottom:36px;align-items:start;}
+  @media (max-width:860px){.layout-2col{grid-template-columns:1fr;}}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:4px;padding:20px 22px;}
+  .panel h3{
+    font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);
+    margin:0 0 14px;font-weight:700;
+  }
+  .diagram-panel{
+    background:
+      linear-gradient(var(--paper-dim) 1px,transparent 1px) 0 0/100% 16px,
+      linear-gradient(90deg,var(--paper-dim) 1px,transparent 1px) 0 0/16px 100%,
+      #fbfbf8;
+  }
+  .diagram-panel svg{display:block;width:100%;height:auto;}
+  .diagram-legend{font-size:11.5px;color:var(--ink-soft);margin-top:8px;text-align:center;}
+
+  table.def-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.def-table th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);
+    border-bottom:1px solid var(--line);padding:0 8px 8px 0;font-weight:600;
+  }
+  table.def-table td{padding:8px 8px 8px 0;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  table.def-table tr:last-child td{border-bottom:none;}
+  .sym{font-family:var(--mono);font-weight:700;color:var(--accent);white-space:nowrap;}
+  .fi{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);display:block;margin-top:2px;}
+
+  .case-block{margin-bottom:30px;}
+  .case-title{
+    font-size:14px;font-weight:700;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;
+  }
+  .case-title .n{
+    font-family:var(--mono);font-size:11px;background:var(--ink);color:#fff;padding:2px 7px;border-radius:2px;
+  }
+
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  @media (max-width:760px){.calc-grid{grid-template-columns:1fr;}}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+  .field label{font-size:12.5px;color:var(--ink-soft);}
+  .field label .sym{margin-right:6px;}
+  .field input{
+    font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:3px;
+    background:#fbfbf8;color:var(--ink);width:100%;
+  }
+  .field input:focus{outline:2px solid var(--accent-2);outline-offset:0;border-color:var(--accent-2);}
+
+  .result-card{
+    border:1px solid var(--line);border-radius:4px;padding:16px 18px;margin-bottom:12px;background:#fbfbf8;
+  }
+  .result-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .result-name{font-size:13px;color:var(--ink-soft);}
+  .result-value{font-family:var(--mono);font-size:24px;font-weight:700;}
+  .result-limit{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .limit-tag{font-family:var(--sans);font-size:10px;color:var(--ink-soft);background:var(--paper-dim);border-radius:3px;padding:1px 6px;margin-left:6px;letter-spacing:.02em;}
+  .chip{
+    font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em;
+  }
+  .chip.pass{background:var(--good-bg);color:var(--good);}
+  .chip.fail{background:var(--bad-bg);color:var(--bad);}
+
+  details.coef{border:1px solid var(--line);border-radius:4px;margin-top:14px;}
+  details.coef summary{
+    cursor:pointer;padding:10px 14px;font-size:12.5px;font-weight:600;color:var(--accent);
+    list-style:none;display:flex;justify-content:space-between;align-items:center;
+  }
+  details.coef summary::-webkit-details-marker{display:none;}
+  details.coef summary::after{content:"展开 ▾";color:var(--ink-soft);font-weight:500;}
+  details.coef[open] summary::after{content:"收起 ▴";}
+  .coef-wrap{overflow-x:auto;border-top:1px solid var(--line-soft);padding:12px 14px;}
+  table.coef-table{border-collapse:collapse;font-family:var(--mono);font-size:12px;width:100%;min-width:340px;}
+  table.coef-table th{text-align:left;color:var(--ink-soft);font-weight:600;padding:4px 14px 6px 0;border-bottom:1px solid var(--line);}
+  table.coef-table td{padding:3px 14px 3px 0;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  table.coef-table tr:nth-child(even){background:var(--paper-dim);}
+
+  .example-box{
+    border:1px dashed var(--accent-2);background:var(--accent-soft);border-radius:4px;padding:16px 18px;margin-top:18px;
+  }
+  .example-box h4{margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);}
+  .example-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 18px;font-family:var(--mono);font-size:12.5px;}
+  .example-grid .k{color:var(--ink-soft);}
+  .example-grid .v{font-weight:700;}
+
+  .note-box{
+    border-left:3px solid var(--warn);background:#fbf3ec;padding:12px 16px;border-radius:0 3px 3px 0;
+    font-size:13px;color:#5c3d24;margin-top:16px;
+  }
+  .link-out{
+    display:inline-flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;font-weight:600;
+    color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-2);padding-bottom:1px;
+  }
+
+  footer.foot{
+    margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;
+  }
+  footer.foot a{color:var(--accent-2);}
+
+  .nav-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:30px;}
+  .nav-tabs button{
+    font-family:var(--mono);font-size:12px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+    padding:7px 12px;border-radius:20px;cursor:pointer;
+  }
+  .nav-tabs button:hover{border-color:var(--accent-2);color:var(--accent);}
+  .nav-tabs button.current{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand" id="brandHome" tabindex="0" role="button" aria-label="返回总览">
+      <div class="brand-mark">FI</div>
+      <div class="brand-text">
+        <div class="eyebrow">Traficom 304841/2019</div>
+        <h1>芬兰 HCT（High Capacity Transport）通道圆计算手册</h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="topHomeBtn">↺ 总览</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <div class="shell">
+
+    <!-- ============ 常驻左侧导航：场景 + 计算页，与右侧内容并行 ============ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="side-block">
+        <div class="section-label small">11 种组合类型</div>
+        <div class="side-list" id="sideScenarioList"></div>
+      </div>
+      <div class="side-block">
+        <div class="section-label small">7 个计算页</div>
+        <div class="side-list" id="sideTabList"></div>
+      </div>
+    </aside>
+
+    <!-- ============ 右侧内容：总览或计算页详情，随点击切换 ============ -->
+    <main class="content" id="mainContent"></main>
+
+  </div>
+
+  <footer class="foot">
+    <span>数据整理自 Traficom 法规原文与官方计算器 Excel，仅供工程参考；正式合规判定请以原始文件及授权专家意见为准。</span>
+    <span><a href="https://drive.google.com/file/d/1s1hAwW1lJP4yAF2ArdvLhxSFDEWv9wDF/view" target="_blank" rel="noopener">中文翻译版 PDF</a></span>
+  </footer>
+</div>
+
+<script>
+/* ======================================================================
+   1. 车辆单元示意图渲染
+   ====================================================================== */
+const UNIT_SPECS = {
+  tractor:{fill:'#26545f',dark:'#173a42',label:'牵引车',
+    body:(x)=>`<rect x="${x+14}" y="18" width="76" height="40" rx="5" fill="${UNIT_SPECS.tractor.fill}"/>
+                <rect x="${x+14}" y="4" width="26" height="34" rx="4" fill="${UNIT_SPECS.tractor.dark}"/>`,
+    wheels:(x)=>[[x+32,80],[x+72,80],[x+86,80]],
+    landmarks:(x)=>({front:x+32, axle:x+79, rear:x+92, tail:x+92})},
+  semi:{fill:'#b3752c',label:'半挂车',
+    body:(x)=>`<rect x="${x+4}" y="30" width="96" height="30" rx="4" fill="${UNIT_SPECS.semi.fill}"/>
+                <circle cx="${x+13}" cy="45" r="4" fill="#fff" stroke="${UNIT_SPECS.semi.fill}" stroke-width="2"/>`,
+    wheels:(x)=>[[x+78,74],[x+92,74]],
+    landmarks:(x)=>({front:x+13, axle:x+85, rear:x+97, tail:x+100})},
+  dolly:{fill:'#5c6b66',label:'Dolly',
+    body:(x)=>`<line x1="${x}" y1="50" x2="${x+30}" y2="50" stroke="${UNIT_SPECS.dolly.fill}" stroke-width="4"/>
+                <rect x="${x+28}" y="40" width="46" height="20" rx="3" fill="${UNIT_SPECS.dolly.fill}"/>
+                <circle cx="${x+73}" cy="42" r="4" fill="#fff" stroke="${UNIT_SPECS.dolly.fill}" stroke-width="2"/>`,
+    wheels:(x)=>[[x+52,66]],
+    landmarks:(x)=>({front:x+5, axle:x+52, rear:x+73, tail:x+74})},
+  centeraxle:{fill:'#3c7a4e',label:'中置轴挂车',
+    body:(x)=>`<line x1="${x}" y1="50" x2="${x+24}" y2="40" stroke="${UNIT_SPECS.centeraxle.fill}" stroke-width="3"/>
+                <line x1="${x}" y1="50" x2="${x+24}" y2="60" stroke="${UNIT_SPECS.centeraxle.fill}" stroke-width="3"/>
+                <rect x="${x+15}" y="32" width="82" height="28" rx="4" fill="${UNIT_SPECS.centeraxle.fill}"/>`,
+    wheels:(x)=>[[x+52,72]],
+    landmarks:(x)=>({front:x+3, axle:x+52, rear:x+97, tail:x+97})},
+  full:{fill:'#6a4a94',label:'全挂车',
+    body:(x)=>`<line x1="${x}" y1="50" x2="${x+14}" y2="50" stroke="${UNIT_SPECS.full.fill}" stroke-width="4"/>
+                <rect x="${x+10}" y="30" width="88" height="30" rx="4" fill="${UNIT_SPECS.full.fill}"/>`,
+    wheels:(x)=>[[x+30,74],[x+86,74]],
+    landmarks:(x)=>({front:x+3, axle:x+30, axle2:x+86, tail:x+96})}
+};
+const SLOT=100, GAP=16;
+const ANNOTATION_ROW_H = 17;
+const ANNOTATION_COLOR = '#a95a26';
+
+function buildRig(units, opts){
+  opts = opts||{};
+  const n=units.length;
+  const w = n*SLOT + (n-1)*GAP + 20;
+  const TOP_PAD = opts.noLabels ? 0 : 20;   // 顶部留给车辆类型文字（牵引车/半挂车…）的空间
+  const CONTENT_H = 96;                      // 车身+车轮自身占用的高度（不含顶部文字、不含标注行）
+  const ANNOT_Y0 = 92;                       // 标注第一行相对于车身局部坐标系的起始 y
+  let content='';   // 会整体下移 TOP_PAD，放在车身/车轮/标注所在的坐标系里
+  let topLabels=''; // 不下移，固定贴在图的最上方
+
+  // 布局：先算每个单元的 x 偏移与坐标点，标注需要用到
+  const unitX = units.map((type,i)=>10 + i*(SLOT+GAP));
+
+  // 标注：把每个符号换算成像素区间。当区间本身（或区间连同其文字标签的宽度）
+  // 与同一单元内其他标注重叠时，自动错开到下一行，避免相邻短区间的文字挤在一起。
+  let rows = [];
+  const segs = [];
+  if(opts.annotations && opts.annotations.length){
+    const byUnit = {};
+    opts.annotations.forEach(a=>{
+      const lm = UNIT_SPECS[units[a.unit]].landmarks(unitX[a.unit]);
+      const x1 = lm[a.from], x2 = lm[a.to];
+      if(x1===undefined || x2===undefined) return;
+      const segX1 = Math.min(x1,x2), segX2 = Math.max(x1,x2);
+      const mid = (segX1+segX2)/2;
+      const labelHalf = (a.symbol.length*4.7+5)/2;
+      // “占用区间”取线段本身与文字宽度中较大的一个，专门用于行分配判定
+      const packX1 = Math.min(segX1, mid-labelHalf);
+      const packX2 = Math.max(segX2, mid+labelHalf);
+      (byUnit[a.unit] = byUnit[a.unit]||[]).push({symbol:a.symbol, x1:segX1, x2:segX2, packX1, packX2});
+    });
+    Object.values(byUnit).forEach(list=>{
+      list.sort((a,b)=>a.packX1-b.packX1);
+      const unitRows = []; // unitRows[r] = 该行已占用到的最大 x（含文字宽度）
+      list.forEach(seg=>{
+        let r = 0;
+        while(unitRows[r]!==undefined && seg.packX1 < unitRows[r]-0.01) r++;
+        unitRows[r] = seg.packX2;
+        segs.push({...seg, row:r});
+      });
+    });
+    rows = segs.map(s=>s.row);
+  }
+  const maxRow = rows.length ? Math.max(...rows) : -1;
+  const h = TOP_PAD + CONTENT_H + (maxRow>=0 ? (maxRow+1)*ANNOTATION_ROW_H + 6 : 0);
+
+  units.forEach((type,i)=>{
+    const x = unitX[i];
+    if(i>0){
+      content += `<line x1="${x-GAP}" y1="50" x2="${x}" y2="50" stroke="#9aa39c" stroke-width="2.5"/>`;
+      content += `<circle cx="${x-GAP/2}" cy="50" r="2.5" fill="#9aa39c"/>`;
+    }
+    const spec = UNIT_SPECS[type];
+    content += spec.body(x);
+    spec.wheels(x).forEach(([wx,wy])=>{
+      content += `<circle cx="${wx}" cy="${wy}" r="8.5" fill="#20282a"/><circle cx="${wx}" cy="${wy}" r="3" fill="#5b6360"/>`;
+    });
+    if(!opts.noLabels){
+      topLabels += `<text x="${x+50}" y="13" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10.5" fill="#4d5651">${spec.label}</text>`;
+    }
+  });
+
+  segs.forEach(seg=>{
+    const y = ANNOT_Y0 + seg.row*ANNOTATION_ROW_H;
+    content += `<line x1="${seg.x1}" y1="${y}" x2="${seg.x2}" y2="${y}" stroke="${ANNOTATION_COLOR}" stroke-width="1.2"/>`;
+    content += `<line x1="${seg.x1}" y1="${y-3.5}" x2="${seg.x1}" y2="${y+3.5}" stroke="${ANNOTATION_COLOR}" stroke-width="1.2"/>`;
+    content += `<line x1="${seg.x2}" y1="${y-3.5}" x2="${seg.x2}" y2="${y+3.5}" stroke="${ANNOTATION_COLOR}" stroke-width="1.2"/>`;
+    content += `<text x="${(seg.x1+seg.x2)/2}" y="${y-3.5}" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="8" font-weight="700" fill="${ANNOTATION_COLOR}">${seg.symbol}</text>`;
+  });
+
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="车辆组合示意图">${topLabels}<g transform="translate(0,${TOP_PAD})">${content}</g></svg>`;
+}
+
+/* ======================================================================
+   2. 11 种组合类型数据
+   ====================================================================== */
+const SCENARIOS = [
+  {type:1,fi:'Puoliperävaunu',cn:'牵引车 + 半挂车',units:['tractor','semi'],tab:1,
+    desc:'最常见的公路列车：牵引车通过第五轮鞍座直接牵引一台半挂车。'},
+  {type:2,fi:'Keskiakseliperävaunu',cn:'牵引车 + 中置轴挂车',units:['tractor','centeraxle'],tab:0,
+    desc:'挂车轴组位于货厢中部，靠刚性牵引杆连接。单独按挂车自身转向能力判定，不使用组合回归公式。'},
+  {type:3,fi:'Varsinainen perävaunu',cn:'牵引车 + 全挂车',units:['tractor','full'],tab:2,
+    desc:'全挂车前后各有一组车桥，用牵引杆连接。计算时把它拆成"虚拟 Dolly + 半挂车"两段处理。'},
+  {type:4,fi:'Apuvaunu ja puoliperävaunu',cn:'牵引车 + Dolly + 半挂车',units:['tractor','dolly','semi'],tab:2,
+    desc:'用一台转向 Dolly 连接半挂车，几何上与类型 3 等价，共用同一计算页。'},
+  {type:5,fi:'Puoliperävaunu ja puoliperävaunu',cn:'牵引车 + 半挂车 + 半挂车（B-link）',units:['tractor','semi','semi'],tab:3,
+    desc:'第一台半挂车尾部再驮一台半挂车，中间无独立牵引杆，即 B-double 结构。'},
+  {type:6,fi:'Puoliperävaunu ja keskiakseliperävaunu',cn:'牵引车 + 半挂车 + 中置轴挂车',units:['tractor','semi','centeraxle'],tab:4,
+    desc:'第一台半挂车尾部牵引一台中置轴挂车；与类型 5 共用同一套回归系数，仅输入尺寸不同。'},
+  {type:7,fi:'Puoliperävaunu ja varsinainen perävaunu',cn:'牵引车 + 半挂车 + 全挂车（A-double）',units:['tractor','semi','full'],tab:5,
+    desc:'半挂车尾部再用牵引杆挂一台全挂车，属于三铰接的 A-double 长车组合。'},
+  {type:8,fi:'Puoliperävaunu, apuvaunu ja puoliperävaunu',cn:'牵引车 + 半挂车 + Dolly + 半挂车（A-double）',units:['tractor','semi','dolly','semi'],tab:5,
+    desc:'与类型 7 几何等价：用 Dolly 连接第二台半挂车，共用同一计算页。'},
+  {type:9,fi:'Apuvaunu, puoliperävaunu ja puoliperävaunu',cn:'牵引车 + Dolly + 半挂车 + 半挂车（AB-double/ETT）',units:['tractor','dolly','semi','semi'],tab:6,
+    desc:'牵引车先接 Dolly，再驮两台半挂车，是芬兰常见的 ETT/AB-double 结构。'},
+  {type:10,fi:'Varsinainen perävaunu ja puoliperävaunu',cn:'牵引车 + 全挂车 + 半挂车（AB-double/ETT）',units:['tractor','full','semi'],tab:6,
+    desc:'与类型 9 几何等价：全挂车取代"Dolly + 第一台半挂车"，共用同一计算页。'},
+  {type:11,fi:'Puoliperävaunu×3',cn:'牵引车 + 半挂车 + 半挂车 + 半挂车（B-triple）',units:['tractor','semi','semi','semi'],tab:7,
+    desc:'三台半挂车依次经第五轮鞍座连接，是芬兰 34.5m/76t 超长车组的代表结构。'}
+];
+
+/* ======================================================================
+   3. 7 个计算页数据（公式系数取自官方 Excel「HCT-määräys laskuri 4.0」，
+      并与法规 PDF 第 3 章逐项核对一致）
+   ====================================================================== */
+const VARDEF = {
+  VA_AV:'牵引车前轴到后桥（转向轴组）转向点的水平距离',
+  VA_VK:'牵引车后桥转向点到鞍座/牵引钩的距离（鞍座在转向点前方为正）',
+  PV1_AV:'第 1 单元牵引销（或 Dolly 牵引环）到本单元轴组转向点的水平距离',
+  PV1_VK:'第 1 单元轴组转向点到其后方鞍座/牵引钩的距离',
+  PV1_TY:'第 1 单元轴组转向点到其最后端的距离（负值）',
+  PV2_AV:'第 2 单元牵引销到本单元轴组转向点的水平距离',
+  PV2_VK:'第 2 单元轴组转向点到其后方鞍座/牵引钩的距离',
+  PV2_TY:'第 2 单元轴组转向点到其最后端的距离（负值）',
+  PV3_AV:'末端单元牵引销到本单元轴组转向点的水平距离',
+  PV3_TY:'末端单元轴组转向点到其最后端的距离（负值）'
+};
+
+function evalFormula(terms, vals){
+  let sum=0;
+  for(const [name,coef] of terms){
+    if(name==='X'){sum+=coef;continue;}
+    let v;
+    if(name.includes(':')){const [a,b]=name.split(':');v=vals[a]*vals[b];}
+    else if(name.endsWith('^2')){const a=name.slice(0,-2);v=vals[a]*vals[a];}
+    else{v=vals[name];}
+    sum+=coef*v;
+  }
+  return sum;
+}
+
+const TABS = {
+  1:{
+    nameCn:'PPV · 单台半挂车', types:[1], units:['tractor','semi'],
+    annotations:[
+      {symbol:'VA_AV', unit:0, from:'front', to:'axle'},
+      {symbol:'VA_VK', unit:0, from:'axle', to:'rear'},
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV1_TY', unit:1, from:'axle', to:'tail'}
+    ],
+    note:'按牵引车前轴到后桥转向点的轴距分两种公式；系数与阈值已与官方 Excel 的精确单元格公式逐项核对一致。',
+    pdfQuote:{ref:'法规原文 第 3.1 节 Tyypin 1 ajoneuvoyhdistelmä',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla, kun auton etuakselin ja takatelin kääntöpisteen välinen etäisyys on enintään 4,10 metriä. Vetoauton etuakselin ja takatelin kääntöpisteen välisen etäisyyden ollessa yli 4,10 metriä pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan kaavoilla: [toinen kaavaryhmä]"',
+      zh:'道路交通法附件9规定的最小内圆半径与最大后角横向偏移，按以下公式计算——牵引车前轴到后桥转向点的轴距不超过 4.10 m 时用第一组公式；超过 4.10 m 时改用第二组公式。这正是本页分成"标准牵引车"与"长轴距牵引车"两个算例的依据，法规本身已经给出了两种情况各自完整的公式，不需要额外换算。'},
+    cases:[
+      {name:'标准牵引车（轴距 ≤ 4.10 m）',
+       inputs:[
+         {key:'PV1_AV',def:VARDEF.PV1_AV,val:11150},
+         {key:'PV1_TY',def:VARDEF.PV1_TY,val:-6410}
+       ],
+       outputs:[
+        {key:'PV1rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:4000,terms:[['X',9625.37064041213],['PV1_AV',-0.224184591206964],['PV1_AV^2',-2.51733660852218e-05]]},
+        {key:'PV1ss',name:'后角横向偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-206.086140621753],['PV1_AV',0.0187348906830469],['PV1_TY',-0.0981397142261937],['PV1_AV:PV1_TY',-7.07816868346087e-06],['PV1_AV^2',-2.02653966123043e-06],['PV1_TY^2',-4.11368907383401e-05]]}
+       ]},
+      {name:'长轴距牵引车（轴距 > 4.10 m）',
+       inputs:[
+         {key:'VA_AV',def:VARDEF.VA_AV,val:3890},
+         {key:'VA_VK',def:'鞍座到后桥转向点的距离（鞍座在转向点前方为正）',val:500},
+         {key:'PV1_AV',def:VARDEF.PV1_AV,val:11060},
+         {key:'PV1_TY',def:VARDEF.PV1_TY,val:-6480}
+       ],
+       outputs:[
+        {key:'PV1rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:4000,terms:[['X',10378.8311150943],['VA_AV',-0.152514585280829],['VA_VK',0.036396579575908],['PV1_AV',-0.160102797111362],['VA_AV:VA_VK',-1.0251013362842e-06],['VA_AV:PV1_AV',7.62792374285836e-06],['VA_VK:PV1_AV',-2.53543717992066e-06],['VA_AV^2',-3.25176768264042e-05],['VA_VK^2',3.02039630452014e-05],['PV1_AV^2',-3.15812931061656e-05]]},
+        {key:'PV1ss',name:'后角横向偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-341.0184046295],['VA_AV',0.0492987088799518],['VA_VK',0.0357789396499471],['PV1_AV',0.0448647200364334],['PV1_TY',-0.0546386922270935],['VA_AV:VA_VK',-1.95867916806607e-06],['VA_AV:PV1_AV',-2.99097901719073e-06],['VA_AV:PV1_TY',-6.77387101526015e-06],['VA_VK:PV1_AV',-3.1874475130728e-06],['VA_VK:PV1_TY',-1.68820834063793e-06],['PV1_AV:PV1_TY',-7.35173260910904e-06],['VA_AV^2',-2.94433102776112e-06],['VA_VK^2',-2.08870751112413e-05],['PV1_AV^2',-2.70341485097856e-06],['PV1_TY^2',-4.03352849921294e-05]]}
+       ]}
+    ]
+  },
+  2:{
+    nameCn:'Auto + TPV · 全挂车 / Dolly+半挂车', types:[3,4], units:['tractor','full'],
+    annotations:[
+      {symbol:'VA_AV', unit:0, from:'front', to:'axle'},
+      {symbol:'VA_VK', unit:0, from:'axle', to:'rear'},
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV2_AV', unit:1, from:'axle', to:'axle2'},
+      {symbol:'PV2_TY', unit:1, from:'axle2', to:'tail'}
+    ],
+    note:'全挂车与"Dolly+半挂车"两种结构，几何上等价，共用同一公式。',
+    pdfQuote:{ref:'法规原文 第 3.2 节 Tyyppien 3 ja 4 ajoneuvoyhdistelmät',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan kaavoilla: [...]"',
+      zh:'与 3.1/3.3/3.6 节不同，法规原文在这一节没有附加"轴距不超过 4.10 m"的条件——直接给出唯一一组公式。这与本页公式本身就把牵引车轴距 VA_AV、VA_VK 当作输入变量是一致的：轴距长短已经算在公式里了，不需要再区分两种情况。'},
+    cases:[
+      {name:'牵引车 + 第一单元(A-尺寸) + 第二单元',
+       inputs:[
+        {key:'VA_AV',def:'牵引车第一轴到后桥转向点的距离',val:6000},
+        {key:'VA_VK',def:'牵引车后桥转向点到牵引钩的距离（负值）',val:-3990},
+        {key:'PV1_AV',def:'挂车 A 尺寸（Dolly 牵引环/牵引杆到转向点距离）',val:3650},
+        {key:'PV2_AV',def:'第二单元牵引销（或前桥转向点）到后桥转向点的距离',val:9970},
+        {key:'PV2_TY',def:VARDEF.PV2_TY,val:-5970}
+       ],
+       outputs:[
+        {key:'PV2rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:4000,terms:[['X',10767.8168365707],['VA_AV',-0.151016568484653],['VA_VK',-0.0442925726903211],['PV1_AV',-0.113442449857037],['PV2_AV',-0.256381140680804],['VA_AV:VA_VK',7.99376570845966e-07],['VA_AV:PV1_AV',5.64903516987475e-06],['VA_AV:PV2_AV',9.24353120072579e-06],['VA_VK:PV1_AV',-2.1094990250047e-06],['VA_VK:PV2_AV',1.95817234189565e-06],['PV1_AV:PV2_AV',7.96541475878289e-06],['VA_AV^2',-3.51717362826557e-05],['VA_VK^2',2.44764469611169e-05],['PV1_AV^2',-3.89100978382879e-05],['PV2_AV^2',-2.59408910743592e-05]]},
+        {key:'PV2ss',name:'末端后角横向偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-481.159065974525],['VA_AV',0.0455184054854358],['VA_VK',0.000602562733203367],['PV1_AV',0.0320855071781799],['PV2_AV',0.0373688133508075],['PV2_TY',-0.0976508457514979],['VA_AV:VA_VK',-3.46098631268957e-06],['VA_AV:PV1_AV',-3.04923325392557e-06],['VA_AV:PV2_AV',-2.46302721610703e-06],['VA_AV:PV2_TY',-5.85347140497241e-06],['VA_VK:PV1_AV',-5.35237524446637e-06],['VA_VK:PV2_AV',-5.22616828094604e-06],['VA_VK:PV2_TY',-6.9565307786347e-06],['PV1_AV:PV2_AV',-2.48765091883455e-06],['PV1_AV:PV2_TY',-6.64746418872837e-06],['PV2_AV:PV2_TY',-5.64834542382126e-06],['VA_AV^2',-2.74446658330803e-06],['VA_VK^2',-2.64603713187367e-05],['PV1_AV^2',-1.97912418641488e-06],['PV2_AV^2',-2.18882976710057e-06],['PV2_TY^2',-4.18261037106045e-05]]}
+       ]}
+    ]
+  },
+  3:{
+    nameCn:'B-linkki · 半挂车 + 半挂车', types:[5], units:['tractor','semi','semi'],
+    annotations:[
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV1_VK', unit:1, from:'axle', to:'rear'},
+      {symbol:'PV1_TY', unit:1, from:'axle', to:'tail'},
+      {symbol:'PV2_AV', unit:2, from:'front', to:'axle'},
+      {symbol:'PV2_TY', unit:2, from:'axle', to:'tail'}
+    ],
+    note:'与类型 6（PPV+KAP 计算页）共用同一套回归系数，仅几何输入不同。',
+    pdfQuote:{ref:'法规原文 第 3.3 节 Tyypin 5 ja 6 ajoneuvoyhdistelmä',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla, kun auton etuakselin ja telin kääntöpisteen välinen etäisyys on enintään 4,10 metriä."',
+      zh:'法规原文规定这组公式适用于牵引车前轴到后桥转向点轴距不超过 4.10 m 的情况。但与第 3.4 节（本手册计算页5）不同，这一节并没有给出轴距超过 4.10 m 时的扣减规则——公式本身也确实不把牵引车轴距当作输入变量。若你的牵引车轴距超过 4.10 m，建议改用第 3.7 节所述的授权专家证明，而不是直接套用本页公式。'},
+    cases:[
+      {name:'B-double 通道圆',
+       inputs:[
+        {key:'PV1_AV',def:'第一台半挂车牵引销到轴组转向点的距离',val:9200},
+        {key:'PV1_VK',def:'第一台半挂车轴组转向点到鞍座的距离（负值）',val:-4200},
+        {key:'PV1_TY',def:'第一台半挂车轴组转向点到最后端的距离（负值）',val:-5200},
+        {key:'PV2_AV',def:'第二台半挂车牵引销到轴组转向点的距离',val:7700},
+        {key:'PV2_TY',def:'第二台半挂车轴组转向点到最后端的距离（负值）',val:-4300}
+       ],
+       outputs:[
+        {key:'PV2rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:3700,terms:[['X',10233.6055329854],['PV1_AV',-0.2440746999045],['PV1_VK',0.0192583169611563],['PV2_AV',-0.253885516481729],['PV1_AV:PV1_VK',-3.64732795805911e-07],['PV1_AV:PV2_AV',9.68818844148056e-06],['PV1_VK:PV2_AV',-9.54250107275956e-07],['PV1_AV^2',-2.5622764194197e-05],['PV1_VK^2',3.60829916400532e-05],['PV2_AV^2',-2.45062601509432e-05]]},
+        {key:'PV1ss',name:'第一台挂车后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-206.086140621284],['PV1_AV',0.0187348906830036],['PV1_TY',-0.0981397142260568],['PV1_AV:PV1_TY',-7.07816868344461e-06],['PV1_AV^2',-2.02653966121706e-06],['PV1_TY^2',-4.11368907383178e-05]]},
+        {key:'PV2ss',name:'第二台(末端)挂车后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-514.475019651589],['PV1_AV',0.0403728111190052],['PV1_VK',0.00918557915803118],['PV2_AV',0.0307655999400199],['PV2_TY',-0.161796309710361],['PV1_AV:PV1_VK',2.15233009188663e-08],['PV1_AV:PV2_AV',-1.8999146698763e-06],['PV1_AV:PV2_TY',-3.96743240806253e-06],['PV1_VK:PV2_AV',-3.65034398023809e-07],['PV1_VK:PV2_TY',-9.4900375998866e-07],['PV2_AV:PV2_TY',-4.92546224047582e-06],['PV1_AV^2',-2.11894355078009e-06],['PV1_VK^2',-1.11544109370775e-05],['PV2_AV^2',-1.68590807986718e-06],['PV2_TY^2',-4.49788308347029e-05]]}
+       ]}
+    ]
+  },
+  4:{
+    nameCn:'PPV + KAP · 半挂车 + 中置轴挂车', types:[6], units:['tractor','semi','centeraxle'],
+    annotations:[
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV1_VK', unit:1, from:'axle', to:'rear'},
+      {symbol:'PV1_TY', unit:1, from:'axle', to:'tail'},
+      {symbol:'PV2_AV', unit:2, from:'front', to:'axle'},
+      {symbol:'PV2_TY', unit:2, from:'axle', to:'tail'}
+    ],
+    note:'公式与类型 5（B-linkki 计算页）完全相同，仅第二单元换成中置轴挂车的尺寸输入。',
+    pdfQuote:{ref:'法规原文 第 3.3 节 Tyypin 5 ja 6 ajoneuvoyhdistelmä',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla, kun auton etuakselin ja telin kääntöpisteen välinen etäisyys on enintään 4,10 metriä."',
+      zh:'类型 5 和类型 6 共用第 3.3 节同一段文字与同一套公式。法规规定该公式适用于牵引车轴距不超过 4.10 m 的情况，且没有给出超限扣减规则——轴距超过 4.10 m 时建议改用第 3.7 节所述的授权专家证明。'},
+    cases:[
+      {name:'半挂车 + 中置轴挂车 通道圆',
+       inputs:[
+        {key:'PV1_AV',def:'半挂车牵引销到轴组转向点的距离',val:9500},
+        {key:'PV1_VK',def:'半挂车轴组转向点到牵引钩的距离（负值）',val:-4500},
+        {key:'PV1_TY',def:'半挂车轴组转向点到最后端的距离（负值）',val:-5500},
+        {key:'PV2_AV',def:'中置轴挂车牵引环到轴组转向点的距离',val:7000},
+        {key:'PV2_TY',def:'中置轴挂车轴组转向点到最后端的距离（负值）',val:-4000}
+       ],
+       outputs:[
+        {key:'PV2rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:3745.79,terms:[['X',10233.6055329854],['PV1_AV',-0.2440746999045],['PV1_VK',0.0192583169611563],['PV2_AV',-0.253885516481729],['PV1_AV:PV1_VK',-3.64732795805911e-07],['PV1_AV:PV2_AV',9.68818844148056e-06],['PV1_VK:PV2_AV',-9.54250107275956e-07],['PV1_AV^2',-2.5622764194197e-05],['PV1_VK^2',3.60829916400532e-05],['PV2_AV^2',-2.45062601509432e-05]]},
+        {key:'PV1ss',name:'半挂车后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-206.086140621284],['PV1_AV',0.0187348906830036],['PV1_TY',-0.0981397142260568],['PV1_AV:PV1_TY',-7.07816868344461e-06],['PV1_AV^2',-2.02653966121706e-06],['PV1_TY^2',-4.11368907383178e-05]]},
+        {key:'PV2ss',name:'中置轴挂车后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-514.475019651589],['PV1_AV',0.0403728111190052],['PV1_VK',0.00918557915803118],['PV2_AV',0.0307655999400199],['PV2_TY',-0.161796309710361],['PV1_AV:PV1_VK',2.15233009188663e-08],['PV1_AV:PV2_AV',-1.8999146698763e-06],['PV1_AV:PV2_TY',-3.96743240806253e-06],['PV1_VK:PV2_AV',-3.65034398023809e-07],['PV1_VK:PV2_TY',-9.4900375998866e-07],['PV2_AV:PV2_TY',-4.92546224047582e-06],['PV1_AV^2',-2.11894355078009e-06],['PV1_VK^2',-1.11544109370775e-05],['PV2_AV^2',-1.68590807986718e-06],['PV2_TY^2',-4.49788308347029e-05]]}
+       ]}
+    ]
+  },
+  5:{
+    nameCn:'A-tupla · 半挂车 + 全挂车 / 半挂车+Dolly+半挂车', types:[7,8], units:['tractor','semi','full'],
+    annotations:[
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV1_VK', unit:1, from:'axle', to:'rear'},
+      {symbol:'PV1_TY', unit:1, from:'axle', to:'tail'},
+      {symbol:'PV2_AV', unit:2, from:'front', to:'axle'},
+      {symbol:'PV3_AV', unit:2, from:'axle', to:'axle2'},
+      {symbol:'PV3_TY', unit:2, from:'axle2', to:'tail'}
+    ],
+    note:'A-double 三铰接组合；系数已按官方 Excel 单元格公式逐项核对（首单元后角偏移复用类型1/3/4已验证的公式）。',
+    pdfQuote:{ref:'法规原文 第 3.4 节 Tyyppien 7 ja 8 ajoneuvoyhdistelmät',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla, kun auton etuakselin ja telin kääntöpisteen välinen etäisyys on enintään 4,10 metriä. Tätä suuremmalla akselivälillä olevien autojen kohdalla vähennetään alla olevan laskennan mukaisesta sisäsäteestä puolet siitä arvosta, mitä etuakselin ja telin kääntöpisteen välinen etäisyys ylittää 4,10 metriä."',
+      zh:'法规原文规定：牵引车前轴到后桥转向点轴距不超过 4.10 m 时，直接用下方公式计算内圆半径；超过 4.10 m 时，要在算出的内圆半径基础上，额外扣除超出 4.10 m 部分的一半，才是最终判定值。官方 Excel 中这套系数标注为"akselit ohjaa ja keventää"（转向+可减载轴），公式本身不把牵引车轴距当作输入变量，因此无法确认这项扣减是否已经隐含在系数拟合里——为避免猜测导致误判，本计算器不自动做这项扣减。若你的牵引车轴距超过 4.10 m，请对照原始 PDF/Excel 手动核实。'},
+    cases:[
+      {name:'半挂车 + 全挂车/Dolly+半挂车 通道圆',
+       inputs:[
+        {key:'PV1_AV',def:'第一台半挂车牵引销到轴组转向点的距离（Excel记 Lppv）',val:7630},
+        {key:'PV1_VK',def:'第一台半挂车轴组转向点到鞍座的距离（负值，Excel记 Lvk）',val:-4100},
+        {key:'PV2_AV',def:'Dolly 或全挂车的 A 尺寸（Excel记 Lva）',val:3700},
+        {key:'PV3_AV',def:'末端单元牵引销到轴组转向点的距离（Excel记 Ltpv）',val:7630},
+        {key:'PV1_TY',def:'第一台半挂车轴组转向点到最后端的距离（负值，Excel记 Lty1）',val:-4350},
+        {key:'PV3_TY',def:'末端单元轴组转向点到最后端的距离（负值，Excel记 Lty2）',val:-4350}
+       ],
+       outputs:[
+        {key:'rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:3700,terms:[['X',10613.0118412845],['PV1_AV',-0.278492009308882],['PV1_VK',-0.10342392037745],['PV2_AV',-0.188700970933233],['PV3_AV',-0.289157029233963],['PV1_AV:PV1_VK',3.89132092491678e-06],['PV1_AV:PV2_AV',8.40262968565479e-06],['PV1_AV:PV3_AV',9.91510141810803e-06],['PV2_AV:PV1_VK',-1.67324649806461e-06],['PV3_AV:PV1_VK',9.60419470126421e-07],['PV3_AV:PV2_AV',7.87515869307296e-06],['PV1_AV^2',-2.41046923828284e-05],['PV1_VK^2',1.74997937148601e-05],['PV2_AV^2',-3.07670162181287e-05],['PV3_AV^2',-2.30850171305918e-05]]},
+        {key:'ssFirst',name:'第一单元后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-206.086140621753],['PV1_AV',0.0187348906830469],['PV1_TY',-0.0981397142261937],['PV1_AV:PV1_TY',-7.07816868346087e-06],['PV1_AV^2',-2.02653966123043e-06],['PV1_TY^2',-4.11368907383401e-05]]},
+        {key:'ssLast',name:'末端单元后角偏移 Takakulman ss',limit:'max',limitDef:800,terms:[['X',-1079.04172730243],['PV1_AV',0.0715552733269866],['PV1_VK',-0.147038067855709],['PV2_AV',-0.00144747246647911],['PV3_AV',0.00952957839118599],['PV3_TY',-0.311634297436669],['PV1_AV:PV1_VK',2.14784532933888e-06],['PV1_AV:PV2_AV',-1.55655608513729e-07],['PV1_AV:PV3_AV',-4.07632977210925e-07],['PV1_AV:PV3_TY',2.72091943321499e-06],['PV2_AV:PV1_VK',-7.68917130187474e-06],['PV3_AV:PV1_VK',-7.56839115843283e-06],['PV1_VK:PV3_TY',-2.0994718012856e-05],['PV3_AV:PV2_AV',-1.03536749673844e-06],['PV2_AV:PV3_TY',-3.84391414649887e-06],['PV3_AV:PV3_TY',-2.99724649715755e-06],['PV1_AV^2',-2.44982297954756e-06],['PV1_VK^2',-3.58258874195762e-05],['PV2_AV^2',-1.4006344527848e-06],['PV3_AV^2',-1.54659520732759e-06],['PV3_TY^2',-4.87708889492097e-05]]}
+       ]}
+    ]
+  },
+  6:{
+    nameCn:'AB-tupla · Dolly+半挂车+半挂车 / 全挂车+半挂车', types:[9,10], units:['tractor','dolly','semi','semi'],
+    annotations:[
+      {symbol:'VA_AV', unit:0, from:'front', to:'axle'},
+      {symbol:'VA_VK', unit:0, from:'axle', to:'rear'},
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV2_AV', unit:2, from:'front', to:'axle'},
+      {symbol:'PV2_VK', unit:2, from:'axle', to:'rear'},
+      {symbol:'PV2_TY', unit:2, from:'axle', to:'tail'},
+      {symbol:'PV3_AV', unit:3, from:'front', to:'axle'},
+      {symbol:'PV3_TY', unit:3, from:'axle', to:'tail'}
+    ],
+    note:'即 ETT / AB-double。类型 9（Dolly起头）与类型 10（全挂车起头）几何等价，共用同一公式；系数已按官方 Excel 单元格公式逐项核对。',
+    pdfQuote:{ref:'法规原文 第 3.5 节 Tyyppien 9 ja 10 ajoneuvoyhdistelmät',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla."',
+      zh:'和第 3.2 节一样，这一节没有附加轴距条件——因为公式本身就把牵引车轴距 VA_AV、VA_VK 当作输入变量直接纳入回归模型，所以不需要再判断轴距是否超过 4.10 m，也没有额外的扣减步骤。'},
+    cases:[
+      {name:'AB-double 通道圆',
+       inputs:[
+        {key:'VA_AV',def:'牵引车前轴到后桥转向点的距离',val:5450},
+        {key:'VA_VK',def:'牵引车后桥转向点到牵引钩的距离（负值）',val:-2800},
+        {key:'PV1_AV',def:'Dolly（或全挂车）A 尺寸',val:3700},
+        {key:'PV2_AV',def:'中间单元牵引销（或前桥转向点）到后桥转向点的距离',val:6700},
+        {key:'PV2_VK',def:'中间单元后桥转向点到鞍座的距离（负值）',val:-1700},
+        {key:'PV2_TY',def:'中间单元后桥转向点到最后端的距离（负值，仅全挂车结构需要）',val:-2500},
+        {key:'PV3_AV',def:'末端半挂车牵引销到轴组转向点的距离',val:7900},
+        {key:'PV3_TY',def:'末端半挂车轴组转向点到最后端的距离（负值）',val:-4300}
+       ],
+       outputs:[
+        {key:'rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:3700,terms:[['X',11670.2663754494],['VA_AV',-0.197597329892441],['VA_VK',-0.066016542053668],['PV1_AV',-0.153572867911788],['PV2_AV',-0.293677871580544],['PV2_VK',0.0172707303513686],['PV3_AV',-0.30001321593521],['VA_AV:VA_VK',1.84142270040095e-06],['VA_AV:PV1_AV',5.55932371747141e-06],['VA_AV:PV2_AV',9.03052756135251e-06],['VA_AV:PV2_VK',-3.81368919115173e-07],['VA_AV:PV3_AV',8.71995024493225e-06],['VA_VK:PV1_AV',-1.16608421748129e-08],['VA_VK:PV2_AV',2.42649067135832e-06],['VA_VK:PV2_VK',-1.74744917175648e-07],['PV3_AV',2.65714815794738e-06],['PV1_AV:PV2_AV',7.60001202949559e-06],['PV1_AV:PV2_VK',-3.55856847551404e-07],['PV1_AV:PV3_AV',7.39718444734169e-06],['PV2_AV:PV2_VK',-2.44821860264879e-07],['PV2_AV:PV3_AV',8.83730217779035e-06],['PV2_VK:PV3_AV',-6.99277657071813e-07],['VA_AV^2',-3.28195119152754e-05],['VA_VK^2',2.7329292138074e-05],['PV1_AV^2',-3.5951965762779e-05],['PV2_AV^2',-2.49363486072475e-05],['PV2_VK^2',3.46969812302075e-05],['PV3_AV^2',-2.39224513141383e-05]]},
+        {key:'ssMid',name:'中间单元后角偏移 Takakulman ss(linkki)',limit:'max',limitDef:800,terms:[['X',-460.684986504428],['VA_AV',0.0431909630831318],['VA_VK',0.0008674395485016],['PV1_AV',0.0304534660150445],['PV2_AV',0.0355967066541713],['PV2_TY',-0.0954490158899246],['VA_AV:VA_VK',-3.55303309003382e-06],['VA_AV:PV1_AV',-2.99566290569809e-06],['VA_AV:PV2_AV',-2.39736103583483e-06],['VA_AV:PV2_TY',-6.00541987720765e-06],['VA_VK:PV1_AV',-5.39336824817216e-06],['VA_VK:PV2_AV',-5.25453252652323e-06],['VA_VK:PV2_TY',-6.95165015599376e-06],['PV1_AV:PV2_AV',-2.43943494486402e-06],['PV1_AV:PV2_TY',-6.75576340580805e-06],['PV2_AV:PV2_TY',-5.74375305532328e-06],['VA_AV^2',-2.69183409723214e-06],['VA_VK^2',-2.64054791330283e-05],['PV1_AV^2',-1.97271797451321e-06],['PV2_AV^2',-2.16278628378806e-06],['PV2_TY^2',-4.17480314706894e-05]]},
+        {key:'ssLast',name:'末端半挂车后角偏移 Takakulman ss(PPV)',limit:'max',limitDef:800,terms:[['X',-908.868879971053],['VA_AV',0.0423090453005086],['VA_VK',-0.0416766264500425],['PV1_AV',0.024021111746856],['PV2_AV',0.046280130763737],['PV2_VK',-0.00591257038794544],['PV3_AV',0.03519744062194],['PV3_TY',-0.228024495455059],['VA_AV:VA_VK',-8.84703747466776e-07],['VA_AV:PV1_AV',-1.27673544147211e-06],['VA_AV:PV2_AV',-1.15674015040637e-06],['VA_AV:PV2_VK',2.2174489258527e-07],['VA_AV:PV3_AV',-1.14374587204683e-06],['VA_AV:PV3_TY',-2.74812725812458e-06],['VA_VK:PV1_AV',-3.02985447117691e-06],['VA_VK:PV2_AV',-2.6083320001959e-06],['VA_VK:PV2_VK',-6.03334326874501e-07],['VA_VK:PV3_AV',-2.8550857520307e-06],['VA_VK:PV3_TY',-1.10622697165262e-05],['PV1_AV:PV2_AV',-1.12289251201311e-06],['PV1_AV:PV2_VK',5.05551352069193e-08],['PV1_AV:PV3_AV',-1.1587745965822e-06],['PV1_AV:PV3_TY',-4.27898657575237e-06],['PV2_AV:PV2_VK',3.4699511406645e-07],['PV2_AV:PV3_AV',-1.49417977328986e-06],['PV2_AV:PV3_TY',-1.78396141636854e-06],['PV2_VK:PV3_AV',-2.10199969093575e-07],['PV2_VK:PV3_TY',-2.47904590708211e-06],['PV3_AV:PV3_TY',-3.04211709536567e-06],['VA_AV^2',-2.05138903406193e-06],['VA_VK^2',-2.24989194206518e-05],['PV1_AV^2',-1.33216904980854e-06],['PV2_AV^2',-1.82645155779036e-06],['PV2_VK^2',-1.05985577947853e-05],['PV3_AV^2',-1.41388005505167e-06],['PV3_TY^2',-4.8036212265222e-05]]}
+       ]}
+    ]
+  },
+  7:{
+    nameCn:'B-triple · 三节半挂车', types:[11], units:['tractor','semi','semi','semi'],
+    annotations:[
+      {symbol:'PV1_AV', unit:1, from:'front', to:'axle'},
+      {symbol:'PV1_VK', unit:1, from:'axle', to:'rear'},
+      {symbol:'PV2_AV', unit:2, from:'front', to:'axle'},
+      {symbol:'PV2_VK', unit:2, from:'axle', to:'rear'},
+      {symbol:'PV2_TY', unit:2, from:'axle', to:'tail'},
+      {symbol:'PV3_AV', unit:3, from:'front', to:'axle'},
+      {symbol:'PV3_TY', unit:3, from:'axle', to:'tail'}
+    ],
+    note:'三个铰接点均为第五轮鞍座连接，无独立牵引杆；系数已按官方 Excel 单元格公式逐项核对一致。',
+    pdfQuote:{ref:'法规原文 第 3.6 节 Tyypin 11 ajoneuvoyhdistelmät',
+      fi:'"Tieliikennelain liitteen 9 mukainen pienin sisäsäde ja suurin takakulman sivusiirtymä lasketaan alla olevilla kaavoilla, kun auton etuakselin ja telin kääntöpisteen välinen etäisyys on enintään 4,10 metriä."',
+      zh:'与计算页 3、4 相同，法规原文规定这组公式适用于牵引车轴距不超过 4.10 m 的情况，且没有给出超限扣减规则，公式本身也不含牵引车轴距变量。轴距超过 4.10 m 时，建议改用第 3.7 节所述的授权专家证明。'},
+    cases:[
+      {name:'B-triple 通道圆',
+       inputs:[
+        {key:'PV1_AV',def:'第一节牵引销到轴组转向点的距离',val:5900},
+        {key:'PV1_VK',def:'第一节轴组转向点到鞍座的距离（负值）',val:-1500},
+        {key:'PV2_AV',def:'第二节牵引销到轴组转向点的距离',val:5900},
+        {key:'PV2_VK',def:'第二节轴组转向点到鞍座的距离（负值）',val:-1500},
+        {key:'PV2_TY',def:'第二节轴组转向点到最后端的距离（负值）',val:-2000},
+        {key:'PV3_AV',def:'末节（第三台）半挂车牵引销到轴组转向点的距离',val:7500},
+        {key:'PV3_TY',def:'末节半挂车轴组转向点到最后端的距离（负值）',val:-4500}
+       ],
+       outputs:[
+        {key:'rin',name:'内圆半径 Sisäsäde',limit:'min',limitDef:3700,terms:[['X',11208.2174168395],['PV1_AV',-0.295955996451252],['PV1_VK',0.015773735918795],['PV2_AV',-0.300052528346131],['PV2_VK',0.0172104358120264],['PV3_AV',-0.305468834487108],['PV1_AV:PV1_VK',-2.33110493821763e-07],['PV1_AV:PV2_AV',1.03599037710084e-05],['PV1_AV:PV2_VK',-3.26777820074327e-07],['PV1_AV:PV3_AV',9.94390189560065e-06],['PV1_VK:PV2_AV',-5.72215360862454e-07],['PV1_VK:PV2_VK',2.82317829786399e-08],['PV1_VK:PV3_AV',-5.10431795622246e-07],['PV2_AV:PV2_VK',-2.71784469200396e-07],['PV2_AV:PV3_AV',9.37871970652036e-06],['PV2_VK:PV3_AV',-7.22092472186849e-07],['PV1_AV^2',-2.43865645194307e-05],['PV1_VK^2',3.38899096505991e-05],['PV2_AV^2',-2.36093101491423e-05],['PV2_VK^2',3.33586028339269e-05],['PV3_AV^2',-2.2707871426283e-05]]},
+        {key:'ssMid',name:'第二节后角偏移 Takakulman ss(linkki)',limit:'max',limitDef:800,terms:[['X',-514.475019651589],['PV1_AV',0.0403728111190052],['PV1_VK',0.00918557915803118],['PV2_AV',0.0307655999400199],['PV2_TY',-0.161796309710361],['PV1_AV:PV1_VK',2.15233009188663e-08],['PV1_AV:PV2_AV',-1.8999146698763e-06],['PV1_AV:PV2_TY',-3.96743240806253e-06],['PV1_VK:PV2_AV',-3.65034398023809e-07],['PV1_VK:PV2_TY',-9.4900375998866e-07],['PV2_AV:PV2_TY',-4.92546224047582e-06],['PV1_AV^2',-2.11894355078009e-06],['PV1_VK^2',-1.11544109370775e-05],['PV2_AV^2',-1.68590807986718e-06],['PV2_VK^2',-4.49788308347029e-05]]},
+        {key:'ssLast',name:'末节(第三台)后角偏移 Takakulman ss(PPV)',limit:'max',limitDef:800,terms:[['X',-767.859352680078],['PV1_AV',0.0403838316808576],['PV1_VK',0.00290307808269588],['PV2_AV',0.0330744953040582],['PV2_VK',-0.00646504285876477],['PV3_AV',0.0229574990767699],['PV3_TY',-0.250107674616091],['PV1_AV:PV1_VK',2.1608762214529e-07],['PV1_AV:PV2_AV',-8.78818367854879e-07],['PV1_AV:PV2_VK',3.12990830740023e-07],['PV1_AV:PV3_AV',-8.26052339958101e-07],['PV1_AV:PV3_TY',-1.20114600729244e-06],['PV1_VK:PV2_AV',-3.3901494779053e-07],['PV1_VK:PV2_VK',-1.76523327148704e-07],['PV1_VK:PV3_AV',-3.78588681931765e-07],['PV1_VK:PV3_TY',-2.07527205608087e-06],['PV2_AV:PV2_VK',2.13105202385416e-07],['PV2_AV:PV3_AV',-9.36547752260138e-07],['PV2_AV:PV3_TY',-2.18321697444079e-06],['PV2_VK:PV3_AV',-3.66637669304438e-07],['PV2_VK:PV3_TY',-3.29248411117127e-06],['PV3_AV:PV3_TY',-3.48384008961e-06],['PV1_AV^2',-1.72309827076301e-06],['PV1_VK^2',-9.15355797701503e-06],['PV2_AV^2',-1.38957803874889e-06],['PV2_VK^2',-9.86646439465756e-06],['PV3_AV^2',-1.05730235486348e-06],['PV3_TY^2',-5.00407177576194e-05]]}
+       ]}
+    ]
+  }
+};
+
+
+/* ======================================================================
+   4. 渲染：卡片（总览大卡 + 侧栏紧凑条目共用同一份数据）
+   ====================================================================== */
+const TAB_ORDER = [1,2,3,4,5,6,7];
+
+const LEGEND_ITEMS = [
+  ['#26545f','牵引车'],['#b3752c','半挂车'],['#5c6b66','Dolly'],
+  ['#3c7a4e','中置轴挂车'],['#6a4a94','全挂车']
+];
+
+function scenarioCardHtml(s){
+  const disabled = s.tab===0;
+  return `<button type="button" class="card${disabled?' disabled':''}" data-scenario="${s.type}">
+    <div class="diagram-wrap">${buildRig(s.units)}</div>
+    <div class="card-body">
+      <div class="type-row">
+        <span class="type-badge ${disabled?'muted':''}">TYPE ${s.type}</span>
+        <span class="fi-name">${s.fi}</span>
+      </div>
+      <div class="cn-name">${s.cn}</div>
+      <div class="card-desc">${s.desc}</div>
+      <div class="card-foot">
+        ${disabled
+          ? '<span class="note-tag">按挂车单体判定 · 无组合公式</span><span></span>'
+          : `<span class="tab-tag">→ 计算页 ${s.tab}</span><span class="go-arrow">进入 ›</span>`}
+      </div>
+    </div>
+  </button>`;
+}
+function tabCardHtml(id){
+  const t = TABS[id];
+  return `<button type="button" class="card" data-tab="${id}">
+    <div class="diagram-wrap">${buildRig(t.units)}</div>
+    <div class="card-body">
+      <div class="type-row"><span class="type-badge">计算页 ${id}</span></div>
+      <div class="cn-name">${t.nameCn}</div>
+      <div class="card-desc">对应法规类型：${t.types.map(n=>'Type '+n).join(' / ')}</div>
+      <div class="card-foot"><span class="tab-tag">含在线计算器</span><span class="go-arrow">进入 ›</span></div>
+    </div>
+  </button>`;
+}
+function sideScenarioItemHtml(s){
+  const disabled = s.tab===0;
+  return `<button type="button" class="side-item${disabled?' disabled':''}" data-scenario="${s.type}" data-active-tab="${s.tab}">
+    <div class="side-diagram">${buildRig(s.units,{noLabels:true})}</div>
+    <div class="side-item-text">
+      <div class="side-item-top"><span class="type-badge mini ${disabled?'muted':''}">T${s.type}</span></div>
+      <div class="side-item-name">${s.cn}</div>
+    </div>
+  </button>`;
+}
+function sideTabItemHtml(id){
+  const t = TABS[id];
+  return `<button type="button" class="side-item side-item-tab" data-tab="${id}" data-active-tab="${id}">
+    <span class="type-badge mini">页${id}</span>
+    <span class="side-item-name">${t.nameCn}</span>
+  </button>`;
+}
+
+/* ======================================================================
+   5. 渲染：总览页 与 计算页详情（都渲染进右侧 #mainContent，左侧导航常驻不变）
+   ====================================================================== */
+function renderIntro(){
+  return `
+    <div class="intro">
+      <div class="kicker">AJONEUVOYHDISTELMIEN TEKNISET VAATIMUKSET · 修订于 2021.03.31</div>
+      <h2>11 种车辆组合，7 套通道圆计算公式</h2>
+      <p>芬兰《车辆组合技术要求》规定：任何超过标准长度的公路列车，必须能够在半径 12.5m 的外圆与规定内圆之间完成 120° 转弯，且末端挂车后角相对牵引车轨迹的横向偏移不得超限。法规按牵引车—挂车的连接方式定义了 11 种组合类型，并给出对应的多元回归计算公式（原文附录为 Excel，共 7 个计算页）。</p>
+      <p>左侧导航栏与下方卡片是同一份列表：点击任意场景或计算页，右侧会立即切换显示对应公式与算例，导航栏始终保留，方便来回对照。全部 7 个计算页均已逐项对照官方 Excel 的单元格公式（而非其人工标注的变量名，二者在个别行并不一致）验证到浮点精度一致，均提供可编辑输入的在线计算器。</p>
+      <div class="rule-strip">
+        <span>外圆半径 <b>12.50 m</b>（固定）</span>
+        <span>内圆半径下限 <b>约 3.7–4.1 m</b>（因类型而异）</span>
+        <span>后角横向偏移上限 <b>约 0.5–0.8 m</b>（因类型而异）</span>
+        <span>转弯角度 <b>120°</b></span>
+      </div>
+      <div class="source-line">
+        <span>原始文件：</span>
+        <a href="https://drive.google.com/file/d/1r-vt5I9YlvqCnDaDeHX64utC2RfO4z3M/view" target="_blank" rel="noopener">HCT-maarays_FI_-2 korjauttu 20210331.pdf</a>
+        <span>·</span>
+        <a href="https://drive.google.com/file/d/1VU0acLLOgsjTD6SwEuX0p-bQd6GONw5f/view" target="_blank" rel="noopener">HCT-määräys laskuri 4.0.xlsx</a>
+        <span>·</span>
+        <a href="https://drive.google.com/file/d/1s1hAwW1lJP4yAF2ArdvLhxSFDEWv9wDF/view" target="_blank" rel="noopener">中文翻译版 PDF</a>
+      </div>
+    </div>
+
+    <div class="section-label">11 种组合类型 · Yhdistelmätyypit 1–11</div>
+    <div class="legend">${LEGEND_ITEMS.map(([c,l])=>`<span><i class="swatch" style="background:${c}"></i>${l}</span>`).join('')}</div>
+    <div class="grid">${SCENARIOS.map(scenarioCardHtml).join('')}</div>
+
+    <div class="section-label">7 个计算页对照 · Excel 分页</div>
+    <div class="grid">${TAB_ORDER.map(tabCardHtml).join('')}</div>
+  `;
+}
+
+function fmtNum(n){
+  if(Math.abs(n) < 1e-4 && n !== 0) return n.toExponential(3);
+  return (Math.round(n*100)/100).toLocaleString('en-US',{maximumFractionDigits:2});
+}
+function fmtCoef(n){
+  if(Math.abs(n) !== 0 && (Math.abs(n) < 1e-4 || Math.abs(n) >= 1e6)) return n.toExponential(4);
+  return n.toString();
+}
+function termLabel(name){
+  if(name==='X') return '截距 (Intercept)';
+  if(name.includes(':')) return name.split(':').join(' × ');
+  if(name.endsWith('^2')) return name.slice(0,-2)+' ²';
+  return name;
+}
+
+function navHtml(activeId){
+  return `<div class="nav-tabs">
+    ${TAB_ORDER.map(id=>`<button class="${id===activeId?'current':''}" data-nav="${id}">计算页 ${id}</button>`).join('')}
+  </div>`;
+}
+
+function renderCalcCase(tabId, caseIndex, kase){
+  const inputIds = kase.inputs.map(i=>`t${tabId}c${caseIndex}_${i.key}`);
+  const inputsHtml = kase.inputs.map(inp=>`
+    <div class="field">
+      <label><span class="sym">${inp.key}</span>${inp.def}</label>
+      <input type="number" step="1" id="t${tabId}c${caseIndex}_${inp.key}" value="${inp.val}"/>
+    </div>`).join('');
+
+  const outputsHtml = kase.outputs.map((out,oi)=>`
+    <div class="result-card" id="t${tabId}c${caseIndex}_out${oi}">
+      <div class="result-top">
+        <span class="result-name">${out.name}</span>
+        <span class="chip" id="t${tabId}c${caseIndex}_chip${oi}">–</span>
+      </div>
+      <div class="result-value" id="t${tabId}c${caseIndex}_val${oi}">–</div>
+      <div class="result-limit">${out.limit==='min'?'要求 ≥':'要求 ≤'} <b>${fmtNum(out.limitDef)}</b> mm <span class="limit-tag">附件9规定值</span></div>
+      <details class="coef">
+        <summary>系数表 · ${out.terms.length} 项</summary>
+        <div class="coef-wrap">
+          <table class="coef-table">
+            <tr><th>项</th><th>系数</th></tr>
+            ${out.terms.map(([n,c])=>`<tr><td>${termLabel(n)}</td><td>${fmtCoef(c)}</td></tr>`).join('')}
+          </table>
+        </div>
+      </details>
+    </div>`).join('');
+
+  return `<div class="case-block" data-case-tab="${tabId}" data-case-idx="${caseIndex}">
+    <div class="case-title"><span class="n">${caseIndex+1}</span>${kase.name}</div>
+    <div class="calc-grid">
+      <div>${inputsHtml}</div>
+      <div>${outputsHtml}</div>
+    </div>
+  </div>`;
+}
+
+function recalcCase(tabId, caseIndex, kase){
+  const vals = {};
+  kase.inputs.forEach(inp=>{
+    const el = document.getElementById(`t${tabId}c${caseIndex}_${inp.key}`);
+    vals[inp.key] = parseFloat(el.value);
+  });
+  kase.outputs.forEach((out,oi)=>{
+    // 内圆半径与后角偏移的回归输出以"到中心线的位移"为原始符号约定，
+    // 法规比较的是其绝对值（半径 / 偏移量），故统一取绝对值。
+    const result = Math.abs(evalFormula(out.terms, vals));
+    const limit = out.limitDef;
+    const pass = out.limit==='min' ? result >= limit : result <= limit;
+    document.getElementById(`t${tabId}c${caseIndex}_val${oi}`).textContent = fmtNum(result)+' mm';
+    const chip = document.getElementById(`t${tabId}c${caseIndex}_chip${oi}`);
+    chip.textContent = pass ? '符合 PASS' : '不符合 FAIL';
+    chip.className = 'chip ' + (pass?'pass':'fail');
+  });
+}
+
+function wireCase(tabId, caseIndex, kase){
+  const root = document.querySelector(`.case-block[data-case-tab="${tabId}"][data-case-idx="${caseIndex}"]`);
+  root.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>recalcCase(tabId,caseIndex,kase)));
+  recalcCase(tabId, caseIndex, kase);
+}
+
+function renderTab(id){
+  const t = TABS[id];
+  const casesHtml = t.cases.map((k,ci)=>renderCalcCase(id,ci,k)).join('');
+  return `
+    <div class="detail-head">
+      <div class="breadcrumb"><a href="#" data-nav="home">全部场景</a> / 计算页 ${id}</div>
+      <h2>${t.nameCn}</h2>
+      <div class="type-pills">${t.types.map(n=>`<span class="type-pill">TYPE ${n}</span>`).join('')}</div>
+      <p class="detail-desc">${t.note}</p>
+      ${t.pdfQuote ? `
+      <div class="pdf-quote">
+        <div class="pdf-quote-ref">${t.pdfQuote.ref}</div>
+        <blockquote class="pdf-quote-fi">${t.pdfQuote.fi}</blockquote>
+        <div class="pdf-quote-zh">${t.pdfQuote.zh}</div>
+      </div>` : ''}
+    </div>
+    ${navHtml(id)}
+    <div class="panel diagram-panel" style="margin-bottom:28px;">${buildRig(t.units,{annotations:t.annotations})}
+      <div class="diagram-legend">图中<span style="color:${ANNOTATION_COLOR};font-weight:700;">橙色标尺</span>为下方公式使用的符号，对应示意图上的实际测量区间。</div>
+    </div>
+    ${casesHtml}
+    <div class="panel">
+      <h3>符号说明</h3>
+      <table class="def-table">
+        <tr><th>符号</th><th>含义</th></tr>
+        ${Object.keys(VARDEF).map(k=>`<tr><td class="sym">${k}</td><td>${VARDEF[k]}</td></tr>`).join('')}
+      </table>
+      <div class="note-box">内圆半径与后角横向偏移的允许值随组合类型而异，本页"附件9规定值"取自官方 Excel 中对应本组合类型的固定限值，不可更改；仅上方车辆尺寸输入框可按实际车辆调整。如对具体限值有疑问，请以法规附件 9 原文或授权专家出具的证明（法规第 3.7 节）为准。</div>
+      <a class="link-out" href="https://drive.google.com/file/d/1r-vt5I9YlvqCnDaDeHX64utC2RfO4z3M/view" target="_blank" rel="noopener">查看法规原文 PDF →</a>
+      <a class="link-out" style="margin-left:18px;" href="https://drive.google.com/file/d/1VU0acLLOgsjTD6SwEuX0p-bQd6GONw5f/view" target="_blank" rel="noopener">打开官方计算 Excel →</a>
+      <a class="link-out" style="margin-left:18px;" href="https://drive.google.com/file/d/1s1hAwW1lJP4yAF2ArdvLhxSFDEWv9wDF/view" target="_blank" rel="noopener">查看中文翻译 PDF →</a>
+    </div>`;
+}
+
+/* ======================================================================
+   6. 常驻侧边栏 + 路由（侧边栏与内容区并行渲染，切换只替换右侧内容）
+   ====================================================================== */
+const mainContent = document.getElementById('mainContent');
+document.getElementById('sideScenarioList').innerHTML = SCENARIOS.map(sideScenarioItemHtml).join('');
+document.getElementById('sideTabList').innerHTML = TAB_ORDER.map(sideTabItemHtml).join('');
+
+function updateSidebarActive(activeTabId){
+  document.querySelectorAll('.side-item[data-active-tab]').forEach(el=>{
+    const t = parseInt(el.getAttribute('data-active-tab'),10);
+    el.classList.toggle('active', activeTabId!==null && t===activeTabId);
+  });
+}
+
+function showIntro(){
+  mainContent.innerHTML = renderIntro();
+  updateSidebarActive(null);
+  window.scrollTo({top:0,behavior:'instant' in window ? 'instant':'auto'});
+  location.hash = '';
+}
+
+function selectTab(id){
+  mainContent.innerHTML = renderTab(id);
+  TABS[id].cases.forEach((k,ci)=>wireCase(id,ci,k));
+  updateSidebarActive(id);
+  window.scrollTo({top:0,behavior:'instant' in window ? 'instant':'auto'});
+  location.hash = 'tab-'+id;
+}
+
+// 事件委托：总览大卡、侧边栏条目、计算页内的返回链接/切页按钮共用同一套处理
+document.addEventListener('click', (e)=>{
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){
+    e.preventDefault();
+    const v = navBtn.getAttribute('data-nav');
+    if(v==='home') showIntro(); else selectTab(parseInt(v,10));
+    return;
+  }
+  const tabBtn = e.target.closest('[data-tab]');
+  if(tabBtn){ selectTab(parseInt(tabBtn.getAttribute('data-tab'),10)); return; }
+  const scBtn = e.target.closest('[data-scenario]');
+  if(scBtn){
+    const s = SCENARIOS.find(x=>x.type===parseInt(scBtn.getAttribute('data-scenario'),10));
+    if(s && s.tab) selectTab(s.tab);
+  }
+});
+
+document.getElementById('brandHome').addEventListener('click', showIntro);
+document.getElementById('brandHome').addEventListener('keypress',(e)=>{if(e.key==='Enter') showIntro();});
+document.getElementById('topHomeBtn').addEventListener('click', showIntro);
+
+// initial route
+const m = location.hash.match(/tab-(\d)/);
+if(m){ selectTab(parseInt(m[1],10)); } else { showIntro(); }
+</script>
+</body>
+</html>
