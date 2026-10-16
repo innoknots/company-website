@@ -4,6 +4,7 @@ import Link from "next/link";
 import { localeHref } from "@/i18n/href";
 import { consultingDict } from "@/i18n/dictionaries/consulting";
 import { asLocale } from "@/i18n/locales";
+import ConsultingFullPage from "./full-page";
 
 export async function generateMetadata({
   params,
@@ -21,6 +22,8 @@ export default async function ConsultingPage({
 }) {
   const locale = asLocale((await params).locale);
   const d = consultingDict[locale];
+  if (d.kind === "full") return <ConsultingFullPage d={d} locale={locale} />;
+
   const home = localeHref(locale, "/");
   const otherLocale = locale === "en" ? "zh" : "en";
 

@@ -130,6 +130,14 @@ body {
   }
 }
 
+/* The consulting page's section nav glides to its anchors. Scoped to that
+   page so route changes elsewhere still jump straight to the top. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.consulting-page) {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Pages arriving from the gateway fade in rather than snapping. */
 @keyframes page-enter {
   from {
