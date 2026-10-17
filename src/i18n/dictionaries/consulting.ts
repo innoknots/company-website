@@ -205,7 +205,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
       founderLabel: "Founder",
       founderName: "Yang (Justin) Yu",
       founderBody:
-        "InnoKnots was founded by Yang Yu, who has lived and worked in Europe for more than 20 years, most of them in the Nordics. He has built business for technology companies, from mobile at Nokia and telecom and enterprise ICT solutions at Huawei to electric heavy trucks at Windrose Technology. There, he leads commercial and regulatory work across Europe. He holds a PhD in computer science, speaks Chinese and English, and is equally at home in both business cultures.",
+        "InnoKnots was founded by Yang Yu, who has lived and worked in Europe for more than 20 years, most of them in the Nordics. He has built business for technology companies, from mobile at Nokia and telecom and enterprise ICT solutions at Huawei to electric heavy trucks at Windrose Technology. There, he led commercial and regulatory work across Europe. He holds a PhD in computer science, speaks Chinese and English, and is equally at home in both business cultures.",
       founderImageAlt: "Portrait of Yang (Justin) Yu, founder of InnoKnots",
     },
     contact: {
