@@ -117,7 +117,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
           id: "strategy",
           title: "Strategy & New Ventures",
           lead: "Find the right growth move, and make it work.",
-          body: "For diversified groups and growing companies weighing a new market, product or business line, in energy, telecom, logistics or manufacturing. We assess the market and the competition, test the technology and the business model, and weigh the ways in: build, partner or buy.\n\nYou get a clear recommendation, a business case with the numbers behind it, and a practical roadmap to act on.",
+          body: "For diversified groups and growing companies weighing a new market, product or business line, in energy, telecom, logistics or manufacturing. We assess the market and the competition, validate the technology and the business model, and weigh the ways in: build, partner or buy.\n\nYou get a clear recommendation, a business case with the numbers behind it, and a practical roadmap to act on.",
           keywords: [
             "Market entry",
             "Business case",
