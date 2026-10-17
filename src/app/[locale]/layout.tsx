@@ -16,12 +16,12 @@ const plexMono = IBM_Plex_Mono({
 
 const meta: Record<Locale, Metadata> = {
   en: {
-    title: "InnoKnots | Consulting & Sailing in Helsinki",
+    title: "InnoKnots | Business Advisory & Sailing Training",
     description:
       "InnoKnots Oy, Helsinki: business advisory between Europe and China on strategy, partners and capital, and sailing training in the Gulf of Finland.",
   },
   zh: {
-    title: "InnoKnots ｜ 赫尔辛基的咨询与帆船业务",
+    title: "InnoKnots ｜ 商务咨询与航海教学",
     description:
       "InnoKnots Oy 立足赫尔辛基，为中国企业出海欧洲提供咨询，同时在芬兰湾教航海。",
   },

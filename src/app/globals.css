@@ -83,7 +83,75 @@ body {
   outline-offset: -6px;
 }
 
+/*
+  Expanding hand-over
+  --------------------
+  Clicking Sailing pushes the seam across until its panel fills the screen,
+  then the page navigates. The sailing page opens on the same photo, so the
+  full-screen panel becomes its hero without a visible cut. On phones the
+  panels are stacked, so the seam is pushed down instead.
+*/
+.split-panel {
+  transition: flex-grow 550ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Pin the gateway to exactly one screen and drop the panels' minimum
+   heights, so the only thing that moves is how the space is shared. That
+   works the same whether the panels sit side by side or stacked. */
+.split[data-expand] {
+  height: 100svh;
+  overflow: hidden;
+}
+
+.split[data-expand] .split-panel {
+  min-height: 0;
+}
+
+.split[data-expand="sailing"] .split-panel[data-panel="consulting"],
+.split[data-expand="consulting"] .split-panel[data-panel="sailing"] {
+  flex-grow: 0;
+}
+
+/* Consulting opens on a different photo, so instead of matching it the panel
+   floods with brand navy as it expands; the page then fades in out of that. */
+.split-panel .panel-wash {
+  transition: opacity 550ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.split[data-expand="consulting"] .split-panel[data-panel="consulting"] .panel-wash {
+  opacity: 1;
+}
+
+html[data-arrive="wash"] body {
+  background: var(--brand-navy);
+}
+
+/* Settle the hover zoom and veil back to how the next page shows them. */
+.split[data-expand] .panel-image {
+  transform: none !important;
+  filter: none !important;
+}
+
+.split[data-expand] .panel-veil {
+  opacity: 1;
+}
+
+.split[data-expand] .panel-body,
+.split[data-expand] .split-chrome {
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+/* The page reached this way is already on screen; skip its fade-in. */
+[data-arrive="expand"] .page-enter {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .split-panel {
+    transition: none;
+  }
+
   .split-panel .panel-image,
   .split-panel .panel-veil,
   .split-panel .panel-body,

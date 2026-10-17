@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState, type MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { localeHref } from "@/i18n/href";
 import type { Locale } from "@/i18n/locales";
 import type { HomeDict } from "@/i18n/dictionaries/home";
@@ -28,6 +32,20 @@ const panelMeta = [
   },
 ] as const;
 
+type PanelKey = (typeof panelMeta)[number]["key"];
+
+/* How each panel hands over once it has expanded over the other half.
+   "match": the destination opens on the same photo, cropped the same way, so
+   the panel simply becomes its hero. "wash": the destination looks different,
+   so the panel floods with navy and the next page fades in out of it. */
+const HANDOVER: Record<PanelKey, "match" | "wash"> = {
+  sailing: "match",
+  consulting: "wash",
+};
+
+/* Keep in step with the .split-panel transitions in globals.css. */
+const EXPAND_MS = 550;
+
 export default function HomeContent({
   dict,
   locale,
@@ -35,14 +53,70 @@ export default function HomeContent({
   dict: HomeDict;
   locale: Locale;
 }) {
+  const router = useRouter();
+  const [expanding, setExpanding] = useState<PanelKey | null>(null);
+
+  // Arriving back here (or anywhere that renders the gateway) ends any
+  // hand-over that suppressed the next page's own entrance animation.
+  useEffect(() => {
+    delete document.documentElement.dataset.arrive;
+  }, []);
+
+  function openPanel(event: MouseEvent<HTMLAnchorElement>, key: PanelKey) {
+    // Leave new-tab / new-window clicks to the browser.
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    event.preventDefault();
+    if (expanding) return;
+
+    const href = event.currentTarget.getAttribute("href");
+    if (!href) return;
+    router.prefetch(href);
+    window.scrollTo(0, 0);
+    setExpanding(key);
+
+    const handover = HANDOVER[key];
+    window.setTimeout(() => {
+      const root = document.documentElement;
+      if (handover === "match") {
+        // The destination is already on screen; skip its fade-in.
+        root.dataset.arrive = "expand";
+      } else {
+        // Keep the page behind the incoming one navy until its fade-in ends,
+        // so it rises out of the wash rather than out of white.
+        root.dataset.arrive = "wash";
+        const settle = (e: AnimationEvent) => {
+          if (e.animationName !== "page-enter") return;
+          document.removeEventListener("animationend", settle);
+          if (root.dataset.arrive === "wash") delete root.dataset.arrive;
+        };
+        document.addEventListener("animationend", settle);
+      }
+      router.push(href);
+    }, EXPAND_MS);
+  }
+
   return (
-    <main className="split relative flex min-h-svh flex-col md:flex-row">
+    <main
+      className="split relative flex min-h-svh flex-col md:flex-row"
+      data-expand={expanding ?? undefined}
+    >
       {panelMeta.map((meta) => {
         const copy = dict.panels[meta.key];
         return (
           <Link
             key={meta.key}
             href={localeHref(locale, meta.path)}
+            onClick={(event) => openPanel(event, meta.key)}
+            data-panel={meta.key}
             /* Stacked panels take half the viewport, but never squeeze below a
                readable height. A short window scrolls instead of cramping. */
             className="split-panel group relative flex min-h-[max(50svh,24rem)] flex-1 items-end overflow-hidden md:min-h-svh"
@@ -59,6 +133,10 @@ export default function HomeContent({
             <div
               className="panel-veil absolute inset-0"
               style={{ backgroundImage: meta.veil }}
+              aria-hidden="true"
+            />
+            <div
+              className="panel-wash absolute inset-0 bg-navy opacity-0"
               aria-hidden="true"
             />
 
@@ -89,7 +167,7 @@ export default function HomeContent({
 
       {/* On wide screens the logo sits on the seam where the two lines of work
           split apart; stacked on mobile it moves clear of the panel copy. */}
-      <div className="pointer-events-none absolute inset-x-0 top-6 z-10 flex justify-center px-6 md:top-[35%]">
+      <div className="split-chrome pointer-events-none absolute inset-x-0 top-6 z-10 flex justify-center px-6 md:top-[35%]">
         <div className="rounded-sm bg-white/95 px-4 py-2 shadow-[0_18px_50px_rgba(9,26,43,0.35)] backdrop-blur-sm">
           <Image
             src="/logo-stacked.png"
@@ -102,7 +180,7 @@ export default function HomeContent({
         </div>
       </div>
 
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-8 pb-5 font-mono text-[0.72rem] text-white/70 md:px-12 lg:px-16">
+      <footer className="split-chrome pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-8 pb-5 font-mono text-[0.72rem] text-white/70 md:px-12 lg:px-16">
         <span>{dict.footerLine}</span>
         <span className="pointer-events-auto flex items-center gap-4">
           <Link

@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import RevealOnScroll from "../../reveal-on-scroll";
@@ -8,35 +9,69 @@ import type {
   ConsultingService,
 } from "@/i18n/dictionaries/consulting";
 
-function ExampleList({ label, items }: { label: string; items: string[] }) {
+/* Thin line icons, one per service, drawn in the brand cyan. Paths follow the
+   Lucide icon set (ISC licence): compass, globe, trending-up. Keyed by
+   service id, since they are presentation rather than copy. */
+const serviceIcons: Record<string, React.ReactNode> = {
+  strategy: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
+    </>
+  ),
+  partnerships: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </>
+  ),
+  fundraising: (
+    <>
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </>
+  ),
+};
+
+/** The service's icon beside its two-digit number. */
+function ServiceMark({
+  id,
+  index,
+  size,
+}: {
+  id: string;
+  index: number;
+  size: number;
+}) {
   return (
-    <div className="mt-8">
-      <h4 className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-navy/50">
-        {label}
-      </h4>
-      <ul className="mt-4 flex flex-col gap-3">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3 text-navy/80">
-            <span
-              className="mt-[0.7em] h-px w-4 shrink-0 bg-cyan"
-              aria-hidden="true"
-            />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <span className="flex items-center gap-3 text-cyan">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {serviceIcons[id]}
+      </svg>
+      <span className="font-mono text-xs tracking-[0.14em]">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+    </span>
   );
 }
 
 function ServiceBlock({
   service,
   index,
-  examplesLabel,
 }: {
   service: ConsultingService;
   index: number;
-  examplesLabel: string;
 }) {
   return (
     <article
@@ -44,10 +79,8 @@ function ServiceBlock({
       className="reveal grid scroll-mt-36 gap-6 border-t border-navy/10 py-14 md:scroll-mt-24 lg:grid-cols-[minmax(0,0.85fr)_1fr] lg:gap-20 lg:py-20"
     >
       <div>
-        <span className="font-mono text-xs tracking-[0.14em] text-cyan">
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        <h3 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+        <ServiceMark id={service.id} index={index} size={32} />
+        <h3 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
           {service.title}
         </h3>
         <p className="mt-4 max-w-[30ch] text-xl text-navy/70">
@@ -55,12 +88,26 @@ function ServiceBlock({
         </p>
       </div>
       <div>
-        <p className="max-w-[60ch] text-lg leading-relaxed text-navy/80">
-          {service.body}
-        </p>
-        <ExampleList label={examplesLabel} items={service.examples} />
+        {service.body.split("\n\n").map((paragraph, i) => (
+          <p
+            key={i}
+            className={`max-w-[60ch] text-lg leading-relaxed text-navy/80 ${i > 0 ? "mt-4" : ""}`}
+          >
+            {paragraph}
+          </p>
+        ))}
+        <ul className="mt-6 flex flex-wrap gap-2">
+          {service.keywords.map((keyword) => (
+            <li
+              key={keyword}
+              className="rounded-sm border border-navy/20 px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-navy/70"
+            >
+              {keyword}
+            </li>
+          ))}
+        </ul>
         {service.note && (
-          <p className="mt-8 max-w-[60ch] text-sm italic text-navy/50">
+          <p className="mt-6 max-w-[60ch] text-sm italic text-navy/50">
             {service.note}
           </p>
         )}
@@ -79,7 +126,6 @@ export default function ConsultingFullPage({
   const home = localeHref(locale, "/");
   const otherLocale = locale === "en" ? "zh" : "en";
   const { services } = d;
-  const overview = [...services.items, services.entering];
 
   return (
     <main className="consulting-page page-enter bg-white text-navy">
@@ -136,19 +182,23 @@ export default function ConsultingFullPage({
       {/* Hero ------------------------------------------------------------ */}
       <section className="relative flex min-h-[max(72svh,32rem)] flex-col justify-end">
         <Image
-          src="/consulting-hero.jpeg"
+          src="/consulting-hero-dome.jpg"
           alt={d.hero.imageAlt}
           fill
           priority
           sizes="100vw"
-          style={{ objectPosition: "center 40%" }}
+          style={{ objectPosition: "70% 35%" }}
           className="object-cover"
         />
+        {/* Navy is deepest on the left, where the copy sits, and thins out
+            to let the dome show on the right. A second, bottom-up layer
+            keeps the copy legible on narrow screens, where it spans the
+            full width. */}
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(180deg, rgba(21,51,82,0.55) 0%, rgba(21,51,82,0.62) 45%, rgba(9,26,43,0.9) 100%)",
+              "linear-gradient(90deg, rgba(21,51,82,0.92) 0%, rgba(21,51,82,0.66) 50%, rgba(21,51,82,0.28) 100%), linear-gradient(180deg, rgba(9,26,43,0) 45%, rgba(9,26,43,0.7) 100%)",
           }}
           aria-hidden="true"
         />
@@ -156,8 +206,22 @@ export default function ConsultingFullPage({
           <span className="font-mono text-xs uppercase tracking-[0.18em] text-white/75">
             {d.hero.eyebrow}
           </span>
-          <h1 className="mt-4 max-w-[20ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
-            {d.hero.heading}
+          {/* The heading marks its preferred break with "\n". It is honoured
+              from lg up; on narrower screens the first line no longer fits
+              and the break would strand a single word, so the text just
+              wraps naturally there. */}
+          <h1 className="mt-4 text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
+            {d.hero.heading.split("\n").map((line, i) => (
+              <Fragment key={line}>
+                {i > 0 && (
+                  <>
+                    {" "}
+                    <br className="hidden lg:inline" />
+                  </>
+                )}
+                {line}
+              </Fragment>
+            ))}
           </h1>
           <p className="mt-6 max-w-[62ch] text-lg text-white/85 md:text-xl">
             {d.hero.body}
@@ -185,7 +249,7 @@ export default function ConsultingFullPage({
       {/* Services -------------------------------------------------------- */}
       <section
         id="services"
-        className="scroll-mt-28 px-6 pt-20 md:scroll-mt-16 md:px-12 md:pt-28"
+        className="scroll-mt-28 px-6 pt-20 pb-6 md:scroll-mt-16 md:px-12 md:pt-28 md:pb-8"
       >
         <div className="mx-auto max-w-6xl">
           <div className="reveal">
@@ -197,35 +261,40 @@ export default function ConsultingFullPage({
             </h2>
 
             {/* Overview: every service visible at once, each a jump link. */}
-            <ul className="mt-10 grid gap-px overflow-hidden rounded-sm border border-navy/10 bg-navy/10 sm:grid-cols-2 lg:grid-cols-4">
-              {overview.map((s, i) => {
-                const minor = s.id === services.entering.id;
-                return (
-                  <li key={s.id} className="flex">
-                    <a
-                      href={`#${s.id}`}
-                      className={`group flex w-full flex-col gap-3 p-6 transition-colors hover:bg-cyan/5 ${minor ? "bg-navy/[0.03]" : "bg-white"}`}
+            <ul className="mt-10 grid gap-px overflow-hidden rounded-sm border border-navy/10 bg-navy/10 md:grid-cols-3">
+              {services.items.map((s, i) => (
+                <li key={s.id} className="flex">
+                  <a
+                    href={`#${s.id}`}
+                    className="group flex w-full flex-col gap-3 bg-white p-6 transition-colors hover:bg-cyan/5"
+                  >
+                    <ServiceMark id={s.id} index={i} size={24} />
+                    <span className="text-xl font-semibold">{s.title}</span>
+                    <span className="text-sm text-navy/65">{s.lead}</span>
+                    <span
+                      className="mt-auto pt-2 font-mono text-xs text-navy/40 transition-colors group-hover:text-cyan"
+                      aria-hidden="true"
                     >
-                      <span className="font-mono text-xs tracking-[0.14em] text-cyan">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span
-                        className={`font-semibold ${minor ? "text-lg text-navy/80" : "text-xl"}`}
-                      >
-                        {s.title}
-                      </span>
-                      <span className="text-sm text-navy/65">{s.lead}</span>
-                      <span
-                        className="mt-auto pt-2 font-mono text-xs text-navy/40 transition-colors group-hover:text-cyan"
-                        aria-hidden="true"
-                      >
-                        ↓
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
+                      ↓
+                    </span>
+                  </a>
+                </li>
+              ))}
             </ul>
+
+            {/* Entry into Europe is a side note here, not a fourth service;
+                its detail lives on the Chinese page, hence the ↗ (leaves
+                this page) rather than the cards' ↓ (scrolls down). */}
+            <p className="mt-5 text-sm text-navy/60">
+              {services.entering.text}{" "}
+              <Link
+                href={localeHref("zh", "/consulting")}
+                className="inline-flex items-center gap-1 whitespace-nowrap text-navy/80 underline decoration-navy/30 underline-offset-4 transition-colors hover:text-cyan hover:decoration-cyan"
+              >
+                {services.entering.linkLabel}
+                <span aria-hidden="true">↗</span>
+              </Link>
+            </p>
           </div>
 
           <div className="mt-16 md:mt-20">
@@ -234,45 +303,9 @@ export default function ConsultingFullPage({
                 key={service.id}
                 service={service}
                 index={i}
-                examplesLabel={services.examplesLabel}
               />
             ))}
           </div>
-
-          {/* Entering Europe: kept deliberately smaller; the full story is
-              told on the Chinese page. */}
-          <article
-            id={services.entering.id}
-            className="reveal mb-20 scroll-mt-36 rounded-sm bg-navy/[0.03] p-8 md:mb-28 md:scroll-mt-24 md:p-10"
-          >
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_1fr] lg:gap-20">
-              <div>
-                <span className="font-mono text-xs tracking-[0.14em] text-cyan">
-                  {String(services.items.length + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-3 text-2xl font-semibold tracking-tight">
-                  {services.entering.title}
-                </h3>
-                <p className="mt-2 text-navy/70">{services.entering.lead}</p>
-              </div>
-              <div>
-                <p className="max-w-[60ch] text-navy/80">
-                  {services.entering.body}
-                </p>
-                <ExampleList
-                  label={services.examplesLabel}
-                  items={services.entering.examples}
-                />
-                <Link
-                  href={localeHref("zh", "/consulting")}
-                  className="mt-8 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-navy/70 transition-colors hover:text-cyan"
-                >
-                  {services.entering.moreLabel}
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-            </div>
-          </article>
         </div>
       </section>
 
@@ -334,13 +367,16 @@ export default function ConsultingFullPage({
             </div>
           </div>
 
-          <div className="reveal mt-20 grid items-center gap-10 border-t border-navy/10 pt-16 md:mt-24 md:grid-cols-[minmax(0,0.6fr)_1fr] md:gap-16 md:pt-20">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-sm md:max-w-none">
+          {/* A small round portrait: the page is about the services, so the
+              founder is introduced rather than featured. */}
+          <div className="reveal mt-20 flex flex-col gap-8 border-t border-navy/10 pt-16 sm:flex-row sm:items-center sm:gap-12 md:mt-24 md:pt-20">
+            <div className="relative size-40 shrink-0 overflow-hidden rounded-full md:size-56">
               <Image
                 src="/founder.jpg"
                 alt={d.about.founderImageAlt}
                 fill
-                sizes="(max-width: 768px) 100vw, 35vw"
+                sizes="(max-width: 768px) 160px, 224px"
+                style={{ objectPosition: "center 30%" }}
                 className="object-cover"
               />
             </div>
@@ -381,7 +417,15 @@ export default function ConsultingFullPage({
             >
               info@innoknots.com
             </a>
-            <span className="text-navy/60">{d.contact.location}</span>
+            <a
+              href={d.contact.linkedin.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1 underline decoration-navy/30 underline-offset-4 transition-colors hover:text-cyan hover:decoration-cyan"
+            >
+              {d.contact.linkedin.label}
+              <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </div>
       </section>

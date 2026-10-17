@@ -32,7 +32,9 @@ export default async function SailingPage({
       <RevealOnScroll />
 
       {/* Hero ------------------------------------------------------------ */}
-      <section className="relative flex min-h-[max(88svh,34rem)] flex-col">
+      {/* Full screen, matching the homepage panel it expands from, so the
+          photo sits in exactly the same place when the page takes over. */}
+      <section className="relative flex min-h-[max(100svh,34rem)] flex-col">
         <Image
           src="/sailing-hero-web.jpg"
           alt={d.hero.imageAlt}

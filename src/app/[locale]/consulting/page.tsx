@@ -28,7 +28,7 @@ export default async function ConsultingPage({
   const otherLocale = locale === "en" ? "zh" : "en";
 
   return (
-    <main className="page-enter flex min-h-svh flex-col">
+    <main className="page-enter flex min-h-svh flex-col bg-white">
       <header className="flex items-center justify-between px-8 py-6 md:px-12">
         <Link href={home} aria-label="InnoKnots home">
           <Image

@@ -22,8 +22,10 @@ export type ConsultingService = {
   id: string;
   title: string;
   lead: string;
+  /** Paragraphs separated by a blank line ("\n\n"). */
   body: string;
-  examples: string[];
+  /** Short tags shown as chips under the body. */
+  keywords: string[];
   note?: string;
 };
 
@@ -46,10 +48,10 @@ export type ConsultingFullDict = {
   services: {
     label: string;
     heading: string;
-    examplesLabel: string;
     items: ConsultingService[];
-    /** Smaller, last block: entry into Europe, told in full on the Chinese page. */
-    entering: ConsultingService & { moreLabel: string };
+    /** One line under the overview: entry into Europe, told in full on
+        the Chinese page rather than as a fourth service here. */
+    entering: { text: string; linkLabel: string };
   };
   engage: {
     label: string;
@@ -70,7 +72,7 @@ export type ConsultingFullDict = {
     label: string;
     heading: string;
     body: string;
-    location: string;
+    linkedin: { label: string; href: string };
   };
   footer: { line: string };
 };
@@ -96,7 +98,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
     },
     hero: {
       eyebrow: "For Business",
-      heading: "Your companion for business between Europe and China.",
+      heading: "Your companion for business\nbetween Europe and China.",
       body: "InnoKnots is a Nordic-based advisory. We help companies grow across Europe and China: shaping the strategy, finding the partners and suppliers, and raising the capital.",
       industries: [
         "Energy & e-mobility",
@@ -105,58 +107,59 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
         "Industrial manufacturing",
       ],
       cta: "Start a conversation",
-      imageAlt: "An engineer working with a networked hardware interface",
+      imageAlt: "Green leaves projected onto a glowing dome at night",
     },
     services: {
       label: "Services",
       heading: "What we do",
-      examplesLabel: "For example",
       items: [
         {
           id: "strategy",
           title: "Strategy & New Ventures",
           lead: "Find the right growth move, and make it work.",
-          body: "For diversified groups and growing companies weighing a new market, product or business line, in energy, telecom, logistics or manufacturing. We assess the market and the competition, test the technology and the business model, weigh the ways in (build, partner or buy), and turn the answer into a practical roadmap.",
-          examples: [
-            "Deciding whether to add EV charging or energy services to an existing business",
-            "Building the business case for a charging site or truck depot, including partner and revenue models",
-            "Planning fleet electrification: vehicle options, total cost of ownership and depot charging",
-            "Shaping connected-fleet, telematics or site-connectivity offerings",
+          body: "For diversified groups and growing companies weighing a new market, product or business line, in energy, telecom, logistics or manufacturing. We assess the market and the competition, test the technology and the business model, and weigh the ways in: build, partner or buy.\n\nYou get a clear recommendation, a business case with the numbers behind it, and a practical roadmap to act on.",
+          keywords: [
+            "Market entry",
+            "Business case",
+            "Build, partner or buy",
+            "Fleet electrification",
+            "EV charging",
+            "Connected fleets",
           ],
         },
         {
           id: "partnerships",
-          title: "Partnerships & China Supply Chain",
+          title: "China Sourcing & Partnerships",
           lead: "The right partners, with eyes open.",
-          body: "Batteries, energy storage, electric vehicles, telecom equipment and industrial components increasingly come from China. We help European companies find, evaluate and negotiate with suppliers and partners, in China and in Europe, with a clear view of quality, compliance, trade and security risks.",
-          examples: [
-            "Finding and auditing suppliers in China, from batteries and chargers to electronics and industrial components",
-            "Structuring partnerships such as battery-as-a-service, power purchase agreements or distribution",
-            "Organising factory visits and supplier meetings, with on-the-ground support",
+          body: "Batteries, energy storage, electric vehicles, telecom equipment and industrial components increasingly come from China. We help European companies find, audit and negotiate with suppliers and partners in China and in Europe, from a vetted shortlist to a signed agreement, with a clear view of quality, compliance, trade and security risks.\n\nWhen it is time to meet them, we go with you: on factory visits, at trade fairs and as your interpreter on the ground.",
+          keywords: [
+            "Supplier sourcing",
+            "Factory audits",
+            "China visits",
+            "Trade fairs",
+            "On-site interpreting",
+            "Risk & compliance",
           ],
         },
         {
           id: "fundraising",
           title: "Fundraising Advisory",
           lead: "The right capital, from the right partners.",
-          body: "We help growth companies raise capital, with particular reach into China. There, industrial groups, energy companies, equipment and vehicle makers, and logistics companies invest strategically to win orders, markets and a footprint in Europe, alongside ESG and venture investors. We shape your equity story, identify and approach the right investors, and support you through due diligence and negotiation.",
-          examples: [
-            "Preparing the equity story, investor materials and financial model for a round",
-            "Identifying and approaching strategic and financial investors, in China and in Europe",
-            "Coordinating due diligence and supporting term-sheet negotiation",
+          body: "We help growth companies raise capital, with particular reach into China. There, industrial groups, energy companies, equipment and vehicle makers, and logistics companies invest strategically to win orders, markets and a footprint in Europe, alongside ESG and venture investors.\n\nWe shape your equity story, investor materials and financial model, identify and approach the right investors, and stay with you through due diligence to the term sheet.",
+          keywords: [
+            "Equity story",
+            "Investor materials",
+            "Strategic investors",
+            "Chinese capital",
+            "Due diligence",
+            "Term-sheet negotiation",
           ],
           note: "We advise and make introductions; we do not handle client funds or execute transactions.",
         },
       ],
       entering: {
-        id: "entering-europe",
-        title: "Entering Europe",
-        lead: "For companies coming to Europe.",
-        body: "For companies from outside Europe, we support market entry: vehicle type approval and regulation, distribution and service networks, and first customers and pilots.",
-        examples: [
-          "Planning type approval and market entry for a vehicle or equipment maker",
-        ],
-        moreLabel: "More in Chinese",
+        text: "Coming to Europe from outside? We also help with type approval, distribution and first customers.",
+        linkLabel: "Read more in Chinese",
       },
     },
     engage: {
@@ -200,16 +203,19 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
         },
       ],
       founderLabel: "Founder",
-      founderName: "Yang Yu",
+      founderName: "Yang (Justin) Yu",
       founderBody:
-        "InnoKnots was founded by Yang Yu. Over more than 15 years in the Nordics, Yang has built business for technology companies, from mobile at Nokia and telecom and enterprise networks at Huawei to electric heavy trucks at Windrose Technology, where he leads commercial and regulatory work across Europe. He holds a PhD in computer science and works in English, Chinese and Finnish.",
-      founderImageAlt: "Portrait of Yang Yu, founder of InnoKnots",
+        "InnoKnots was founded by Yang Yu, who has lived and worked in Europe for more than 20 years, most of them in the Nordics. He has built business for technology companies, from mobile at Nokia and telecom and enterprise ICT solutions at Huawei to electric heavy trucks at Windrose Technology. There, he leads commercial and regulatory work across Europe. He holds a PhD in computer science, speaks Chinese and English, and is equally at home in both business cultures.",
+      founderImageAlt: "Portrait of Yang (Justin) Yu, founder of InnoKnots",
     },
     contact: {
       label: "Contact",
       heading: "Let's talk",
       body: "Tell us what you are working on. A first conversation is without obligation.",
-      location: "Helsinki, Finland",
+      linkedin: {
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/in/justin-yu-21579b4/",
+      },
     },
     footer: { line: "InnoKnots Oy · Helsinki, Finland" },
   },
