@@ -38,6 +38,8 @@ export type ConsultingFullDict = {
     eyebrow: string;
     heading: string;
     body: string;
+    /** Sectors we know well: a sense of range, not the limit of it. */
+    industries: string[];
     cta: string;
     imageAlt: string;
   };
@@ -81,7 +83,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
     meta: {
       title: "Consulting | InnoKnots",
       description:
-        "Nordic-based advisory for companies in Europe's energy and mobility transition: growth strategy, partnerships including access to China's supply chain, and fundraising advisory.",
+        "Nordic-based advisory helping companies grow between Europe and China: growth strategy, partners and supply chains, and fundraising.",
     },
     nav: {
       back: "Home",
@@ -94,8 +96,14 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
     },
     hero: {
       eyebrow: "For Business",
-      heading: "Turning the energy and mobility transition into business.",
-      body: "InnoKnots is a Nordic-based advisory working across Europe. We help companies build new business in electric mobility, clean energy, and the digital infrastructure and connectivity behind them: choosing the right move, finding the partners to deliver it, and raising the capital to fund it, in Europe and in China.",
+      heading: "Your companion for business between Europe and China.",
+      body: "InnoKnots is a Nordic-based advisory. We help companies grow across Europe and China: shaping the strategy, finding the partners and suppliers, and raising the capital.",
+      industries: [
+        "Energy & e-mobility",
+        "Telecom & digital infrastructure",
+        "Logistics & transport",
+        "Industrial manufacturing",
+      ],
       cta: "Start a conversation",
       imageAlt: "An engineer working with a networked hardware interface",
     },
@@ -108,7 +116,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
           id: "strategy",
           title: "Strategy & New Ventures",
           lead: "Find the right growth move, and make it work.",
-          body: "For diversified groups and growing companies looking at electrification, charging, energy services or digital infrastructure. We assess the market and the competition, test the technology and the business model, weigh the ways in (build, partner or buy), and turn the answer into a practical roadmap.",
+          body: "For diversified groups and growing companies weighing a new market, product or business line, in energy, telecom, logistics or manufacturing. We assess the market and the competition, test the technology and the business model, weigh the ways in (build, partner or buy), and turn the answer into a practical roadmap.",
           examples: [
             "Deciding whether to add EV charging or energy services to an existing business",
             "Building the business case for a charging site or truck depot, including partner and revenue models",
@@ -120,9 +128,9 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
           id: "partnerships",
           title: "Partnerships & China Supply Chain",
           lead: "The right partners, with eyes open.",
-          body: "Batteries, energy storage, charging equipment and electric vehicles increasingly come from China. We help European companies find, evaluate and negotiate with suppliers and partners, in China and in Europe, with a clear view of quality, compliance, trade and security risks.",
+          body: "Batteries, energy storage, electric vehicles, telecom equipment and industrial components increasingly come from China. We help European companies find, evaluate and negotiate with suppliers and partners, in China and in Europe, with a clear view of quality, compliance, trade and security risks.",
           examples: [
-            "Finding and auditing battery, storage or charger suppliers in China",
+            "Finding and auditing suppliers in China, from batteries and chargers to electronics and industrial components",
             "Structuring partnerships such as battery-as-a-service, power purchase agreements or distribution",
             "Organising factory visits and supplier meetings, with on-the-ground support",
           ],
@@ -131,7 +139,7 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
           id: "fundraising",
           title: "Fundraising Advisory",
           lead: "The right capital, from the right partners.",
-          body: "We help growth companies in energy and mobility raise capital, with particular reach into China. There, energy groups, equipment makers, charging operators, vehicle makers and logistics companies invest strategically to win orders, markets and a footprint in Europe, alongside ESG and venture investors. We shape your equity story, identify and approach the right investors, and support you through due diligence and negotiation.",
+          body: "We help growth companies raise capital, with particular reach into China. There, industrial groups, energy companies, equipment and vehicle makers, and logistics companies invest strategically to win orders, markets and a footprint in Europe, alongside ESG and venture investors. We shape your equity story, identify and approach the right investors, and support you through due diligence and negotiation.",
           examples: [
             "Preparing the equity story, investor materials and financial model for a round",
             "Identifying and approaching strategic and financial investors, in China and in Europe",
@@ -179,8 +187,8 @@ export const consultingDict: Record<Locale, ConsultingDict> = {
           body: "Engineering depth and years of building businesses. We understand both the technology and the deal.",
         },
         {
-          title: "Hands-on in e-mobility and connectivity.",
-          body: "First-hand work with electric trucks, type approval, charging interoperability and fleet trials across Europe, built on a long background in telecom and enterprise networks.",
+          title: "Hands-on, across industries.",
+          body: "First-hand work in telecom and enterprise networks, electric trucks and type approval, logistics fleet trials, and supply chains between Europe and China.",
         },
         {
           title: "Rooted in the Nordics, working across Europe.",

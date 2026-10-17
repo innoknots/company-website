@@ -162,6 +162,16 @@ export default function ConsultingFullPage({
           <p className="mt-6 max-w-[62ch] text-lg text-white/85 md:text-xl">
             {d.hero.body}
           </p>
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {d.hero.industries.map((industry) => (
+              <li
+                key={industry}
+                className="rounded-sm border border-white/25 px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-white/80"
+              >
+                {industry}
+              </li>
+            ))}
+          </ul>
           <a
             href="#contact"
             className="mt-8 inline-flex items-center gap-2 rounded-sm bg-white px-6 py-3 font-mono text-xs uppercase tracking-[0.14em] text-navy transition-colors hover:bg-cyan hover:text-white"

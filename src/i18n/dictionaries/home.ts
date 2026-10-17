@@ -23,7 +23,7 @@ export const homeDict: Record<Locale, HomeDict> = {
       consulting: {
         eyebrow: "For Business",
         title: "Consulting",
-        line: "One-stop support for European companies entering China: introductions, connections, and site visits.",
+        line: "Your companion for business between Europe and China: strategy, partners and capital.",
         alt: "An engineer working with a networked hardware interface",
       },
     },
